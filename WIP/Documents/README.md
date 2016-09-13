@@ -25,6 +25,7 @@ and CD-SourceCode_Execuable_ProgramPackage.
 
 > This part is about: the developer group (Roles and Responsibilities); the initial idea of the group’s Cpro; overview of similar existing solutions, and overview of existing methods; business outline, limitations of existing system, improvement objectives, and benefits of expected system. 
 <Introduction to this document, how it is organized, (what it contains>
+
 ## Report No.2: Project Management Plan 
 
 ### 2.1. Problem Definition

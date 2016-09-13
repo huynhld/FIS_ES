@@ -41,10 +41,10 @@ Introduction to this document, how it is organized, (what it contains)
   -  2.1.3.1. The Current System
     > Describe the current system/situation. This can be paraphrased from the Customer’s Requirement
 
-	-  2.1.3.2. The Proposed System
+  -  2.1.3.2. The Proposed System
     > Describe the system under-developed. This can be paraphrased from the Customer’s Requirement
 
-	-  2.1.3.3. Boundaries of the System
+  -  2.1.3.3. Boundaries of the System
   > List the scope/boundaries of the system under-developed. This can be paraphrased from the Customer’s Requirement
 
 ### 2.2. Project management plan

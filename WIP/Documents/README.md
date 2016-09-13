@@ -1,4 +1,4 @@
-- Reports:
+# - Reports:
 	The ES Capstone Project Document Template is composed of 6 parts called Reports:
 Report No.1: Introduction
 Report No.2: Project Management Plan
@@ -7,7 +7,7 @@ Report No.4: Implementation
 Report No.5: Results
 Report No.6: Conclusion 
 
-- Milestones:
+# - Milestones:
 At begin of week 2 submit: Report No.1 (duration: 1 week)
 At begin of week 3 submit: Report No.2 (duration: 1 week)
 At begin of week 4 submit: Report No.3 (duration: 1 week)
@@ -19,7 +19,7 @@ and CD-SourceCode_Execuable_ProgramPackage.
 In week 15 represent Capstone Project
 
 
-ES Capstone Project Document Template
+# ES Capstone Project Document Template
 
 Report No.1: Introduction
 

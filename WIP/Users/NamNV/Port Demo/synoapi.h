@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <time.h>
 
 #define PS_OK                0x00
 #define PS_COMM_ERR          0x01
@@ -44,7 +45,7 @@ class SynoApi {
 		int read_image_buffer(int &size);
 		int read_return_package(int size);
 		unsigned char ImgData[256 * 288];
-		//int configure_com( int fd );
+		int GetPackage(unsigned char *pData);
 	public:
 		SynoApi();
 		~SynoApi();
@@ -52,6 +53,7 @@ class SynoApi {
 		int upload_img();
 		void show_message(int ret);
 		bool is_opened();
+
 };
 
 

@@ -12,12 +12,7 @@ const unsigned char     CMD      =  0x01;
 const unsigned char     DATA     =  0x02;
 const unsigned char     ENDDATA  =  0x08;
 const unsigned char     RESPONSE =  0x07;
-int PSImgData2BMP(unsigned char* pImgData,const char* pImageFile);
-int WriteBMP(char* file,unsigned char* Input);
-bool DeCode(unsigned char* pSource, int iSourceLength, unsigned char* pDestination, int* iDestinationLength);
-int GetPackageContentLength(unsigned char* pData);
-int  GetPackageLength(unsigned char* pData);
-int  VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData);
+
 SynoApi::SynoApi() {
 
     memset(&tio,0,sizeof(tio));
@@ -285,7 +280,7 @@ int SynoApi::upload_img() {
 	return return_code;
 }
 
-int GetPackageContentLength(unsigned char* pData)
+int SynoApi::GetPackageContentLength(unsigned char* pData)
 {
 	
 	if (!pData)
@@ -295,7 +290,7 @@ int GetPackageContentLength(unsigned char* pData)
 	return length;
 }
 
-int  GetPackageLength(unsigned char* pData)
+int  SynoApi::GetPackageLength(unsigned char* pData)
 {
     // |  °ü±êÊ¶   |   °ü³¤¶È	  |   ...{ÄÚÈÝ}     |  Ð£ÑéºÍ    |
     // |  1 byte   |     2 bytes  |	  ...{°ü³¤¶È}   |  2 bytes   |
@@ -308,7 +303,7 @@ int  GetPackageLength(unsigned char* pData)
 }
 
 
-int  VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData)
+int  SynoApi::VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData)
 {
 	
 	long checkSum = 0;
@@ -329,7 +324,7 @@ int  VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData)
 	return 0;
 }
 
-int WriteBMP(char* file,unsigned char* Input)
+int SynoApi::WriteBMP(char* file,unsigned char* Input)
 {
 	
 	unsigned char head[1078]={
@@ -403,7 +398,7 @@ int WriteBMP(char* file,unsigned char* Input)
 	return 1;
 }
 
-int PSImgData2BMP(unsigned char* pImgData,const char* pImageFile)
+int SynoApi::PSImgData2BMP(unsigned char* pImgData,const char* pImageFile)
 {
 	unsigned char newData[IMAGE_X*IMAGE_Y];
 
@@ -422,7 +417,7 @@ int PSImgData2BMP(unsigned char* pImgData,const char* pImageFile)
 
 
 
-bool DeCode(unsigned char* pSource, int iSourceLength, unsigned char* pDestination, int* iDestinationLength)
+bool SynoApi::DeCode(unsigned char* pSource, int iSourceLength, unsigned char* pDestination, int* iDestinationLength)
 {
 	unsigned char*   pSrc;
 	unsigned char*   pDest;

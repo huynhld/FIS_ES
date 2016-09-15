@@ -46,6 +46,12 @@ class SynoApi {
 		int read_return_package(int size);
 		unsigned char ImgData[256 * 288];
 		int GetPackage(unsigned char *pData);
+		int PSImgData2BMP(unsigned char* pImgData,const char* pImageFile);
+		int WriteBMP(char* file,unsigned char* Input);
+		bool DeCode(unsigned char* pSource, int iSourceLength, unsigned char* pDestination, int* iDestinationLength);
+		int GetPackageContentLength(unsigned char* pData);
+		int  GetPackageLength(unsigned char* pData);
+		int  VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData);
 	public:
 		SynoApi();
 		~SynoApi();

@@ -16,10 +16,13 @@ using namespace std;
 
 
 int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
+int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 const int angleLimit = 5;
 const int distanceLimit = 5;
-const int minuNumberLimit = 14;
+const int minuNumberLimit = 14; 
+double image_mean = 50;
+double image_variance = 300;
 
 void GetDirectionMatrix(int widthSqare)
 {
@@ -27,11 +30,18 @@ void GetDirectionMatrix(int widthSqare)
 	int Ax, Ay, Axy;
 	int Gxx, Gyy, Gxy;
 	int Bx, By;
-
+	double temp = 0;
 
 	for (j = 0; j < IMAGE_WIDTH; j++)
+	{
 		for (i = 0; i < IMAGE_HEIGHT; i++)
+		{
 			directMatrix[j][i] = 0;
+			temp += (ImageData[j][i] - image_mean)*(ImageData[j][i] - image_mean);
+		}
+	}
+	image_variance = temp / (IMAGE_WIDTH*IMAGE_HEIGHT);
+			
 	for (x = widthSqare + 1; x < IMAGE_WIDTH - widthSqare - 1; x++)
 	{
 		for (y = widthSqare + 1; y < IMAGE_HEIGHT - widthSqare - 1; y++)
@@ -65,6 +75,7 @@ void GetDirectionMatrix(int widthSqare)
 
 void LoadImageData(Mat im)
 {
+	int temp_mean = 0;
 	for (int x = 0; x < IMAGE_WIDTH; x++)
 	{
 		for (int y = 0; y < IMAGE_HEIGHT; y++)
@@ -75,11 +86,34 @@ void LoadImageData(Mat im)
 			uchar red = intensity.val[2];
 			int temp = (int)round(red*0.299 + red*0.587 + blue*0.114);
 			ImageData[x][y] = temp;
+			temp_mean += temp;
+			SouceImageData[x][y] = im.at<uchar>(Point(x, y));
 		}
 	}
+	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
 	GetDirectionMatrix(4);
 }
 
+
+void normalization(Mat& img, int MEAN, int VARIANCE)
+{	
+	for (int j = 0; j<IMAGE_WIDTH; j++)
+	{
+		for (int i = 0; i<IMAGE_HEIGHT; i++)
+		{
+			double tempData = static_cast<double>(SouceImageData[i][j]);
+			if (tempData>image_mean)
+			{
+				SouceImageData[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+			}
+			else
+			{
+				SouceImageData[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+			}
+			img.at<uchar>(Point(i, j)) = SouceImageData[i][j];
+		}
+	}
+}
 
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
@@ -95,6 +129,8 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 
 	Mat img = sourceImage.clone();
 	LoadImageData(img);
+	normalization(sourceImage, 50,300);
+	img = sourceImage.clone();
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	localThreshold::binarisation(img, 25, 28);
 	cv::threshold(img, img, 50, 255, cv::THRESH_BINARY);

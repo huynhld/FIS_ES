@@ -6,6 +6,8 @@
 const int IMAGE_HEIGHT = 288;
 const int IMAGE_WIDTH = 256;
 
+const int IMAGE_ROWS = 288;
+const int IMAGE_COLUMNS = 256;
 
 class Minutiae
 {

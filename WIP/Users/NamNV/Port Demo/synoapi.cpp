@@ -108,7 +108,7 @@ int SynoApi::read_image_buffer(int &size) {
 		packageNum++;
 	}
 	std::cout << "packageNum " << packageNum << std::endl;
-	PSImgData2BMP(ImgData,"/home/namte/Desktop/NamTe/port2C/namte");
+	//PSImgData2BMP(ImgData,"/home/namte/Desktop/NamTe/port2C/namte");
 	
 	size = i;
 	return ret;
@@ -276,7 +276,7 @@ int SynoApi::upload_img() {
 		PacketNum++;
 	}
 	while ( iGetData[0] != ENDDATA );
-	PSImgData2BMP(ImgData,"/home/namte/Desktop/NamTe/port2C/namte");
+	PSImgData2BMP(ImgData,"./namte.bmp");
 	return return_code;
 }
 

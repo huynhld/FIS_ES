@@ -1,6 +1,7 @@
 #include "synoapi.h"
 #include <iostream>
 
+using namespace std;
 
 int main() {
 	
@@ -19,6 +20,7 @@ int main() {
 		api->show_message(ret);
 		return 0;
 	}
+
 	delete api;
     return 0;
 }

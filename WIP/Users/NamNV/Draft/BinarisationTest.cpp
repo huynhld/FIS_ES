@@ -73,7 +73,7 @@ void GetDirectionMatrix(int widthSqare)
 }
 
 
-void LoadImageData(Mat im)
+void LoadImageData(Mat& im)
 {
 	int temp_mean = 0;
 	for (int x = 0; x < IMAGE_WIDTH; x++)
@@ -87,7 +87,8 @@ void LoadImageData(Mat im)
 			int temp = (int)round(red*0.299 + red*0.587 + blue*0.114);
 			ImageData[x][y] = temp;
 			temp_mean += temp;
-			SouceImageData[x][y] = im.at<uchar>(Point(x, y));
+			im.at<uchar>(Point(x, y)) = temp;
+			SouceImageData[x][y] = temp;
 		}
 	}
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
@@ -97,9 +98,9 @@ void LoadImageData(Mat im)
 
 void normalization(Mat& img, int MEAN, int VARIANCE)
 {	
-	for (int j = 0; j<IMAGE_WIDTH; j++)
+	for (int i = 0; i<IMAGE_WIDTH; i++)
 	{
-		for (int i = 0; i<IMAGE_HEIGHT; i++)
+		for (int j = 0; j<IMAGE_HEIGHT; j++)
 		{
 			double tempData = static_cast<double>(SouceImageData[i][j]);
 			if (tempData>image_mean)
@@ -119,17 +120,16 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
 	// First argv is always the binary being executed
 	//"C:\\Users\\NamTe\\Desktop\\FingerPrint\\101_1.bmp"
-	Mat sourceImage = cv::imread(imagePath, IMREAD_UNCHANGED);
-
-	if (!sourceImage.data)                              // Check for invalid input
+	Mat img = cv::imread(imagePath, IMREAD_UNCHANGED);
+	if (!img.data)                              // Check for invalid input
 	{
 		cout << "Could not open or find the image" << endl;
 		return -1;
 	}
 
-	Mat img = sourceImage.clone();
+
 	LoadImageData(img);
-	normalization(sourceImage, 50,300);
+	normalization(img, 50,300);
 	img = sourceImage.clone();
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	localThreshold::binarisation(img, 25, 28);

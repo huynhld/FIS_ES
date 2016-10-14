@@ -308,8 +308,14 @@ int main(int argc, const char** argv)
 	if (max_count >= 10)
 		cout << "Welcome : " << finger_id_exist << endl;
 	else
+	{
 		cout << "User Not found!" << endl;
+	}
 
+	if( remove( "./fingerprintimage.bmp" ) != 0 )
+    	std::cout << "Error deleting file" << std::endl;
+	else
+    	std::cout << "File successfully deleted" << std::endl;
 	return 0;
 
 }

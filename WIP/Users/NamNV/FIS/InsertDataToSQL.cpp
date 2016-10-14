@@ -10,6 +10,7 @@
 #include "header/Minutiae.h"
 #include "header/Functions.h"
 #include "header/SQL.h"
+#include "header/synoapi.h"
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -140,13 +141,24 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 int main(int argc, const char** argv)
 {
 	
-	if(argc != 2) {
-        std::cout << "Please provide a target file as the parameter..." << std::endl;
-        exit(1);
-    }
+	SynoApi *api = new SynoApi();
+	if(!api->is_opened()) {
+		api->show_message(-1);
+		return 0;
+	}
+	int ret = api->get_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	ret = api->upload_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
 
 	vector<Minutiae> minutiaeOne;
-	std::string imgPath(argv[1]);
+	std::string imgPath( "./fingerprintimage.bmp");
 	getMinutiae(minutiaeOne, imgPath);
 	SQL sql;
 	sql.create_table();
@@ -176,6 +188,11 @@ int main(int argc, const char** argv)
 	// 	    show_vector(v);
 	// ---Init data---///
 	
+	if( remove( "./fingerprintimage.bmp" ) != 0 )
+    	std::cout << "Error deleting file" << std::endl;
+	else
+    	std::cout << "File successfully deleted" << std::endl;
+
 	return 0;
 
 }

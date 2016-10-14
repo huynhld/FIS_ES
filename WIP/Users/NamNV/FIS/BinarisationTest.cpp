@@ -10,6 +10,7 @@
 #include "header/Minutiae.h"
 #include "header/Functions.h"
 #include "header/SQL.h"
+#include "header/synoapi.h"
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -173,11 +174,26 @@ void show_vector(vector<Minutiae> v) {
 
 int main(int argc, const char** argv)
 {
-	if(argc != 2) {
-        std::cout << "Please provide a image file as the parameter..." << std::endl;
-        exit(1);
-    }
+	// if(argc != 2) {
+ //        std::cout << "Please provide a image file as the parameter..." << std::endl;
+ //        exit(1);
+ //    }
 
+    SynoApi *api = new SynoApi();
+	if(!api->is_opened()) {
+		api->show_message(-1);
+		return 0;
+	}
+	int ret = api->get_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	ret = api->upload_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
 
 	// ---Init data---///
 	double scaleSet[] = { 0.8,0.9,1.0,1.1,1.2 };
@@ -227,7 +243,7 @@ int main(int argc, const char** argv)
 	//-- End Init Data -- //	
 	vector<Minutiae> minutiaeOne;
 	vector<Minutiae> minutiaeTwo;
-	int result = getMinutiae(minutiaeOne, argv[1]);
+	int result = getMinutiae(minutiaeOne, "./fingerprintimage.bmp");
 	if(result == -1) {
 		return 0;
 	}

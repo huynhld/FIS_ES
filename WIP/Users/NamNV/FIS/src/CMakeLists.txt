@@ -1,13 +1,11 @@
 file(GLOB SourceFiles "header/*.h" "src/*.cpp")
 
-
 add_library(
     ExtractionAlgorithms
     Filter.cpp
     Minutiae.cpp
     CrossingNumber.cpp
 )
-
 
 add_library(
     BinarisationAlgorithms
@@ -29,9 +27,12 @@ add_library(
     SQL.cpp
 )
 
-
-
 add_library(
     Functions
     Functions.cpp
+)
+
+add_library(
+    Synoapi
+    synoapi.cpp
 )

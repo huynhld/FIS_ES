@@ -2,14 +2,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
-#include "AdaptiveLocalThreshold.h"
-#include "Ideka.h"
-#include "GuoHall.h"
-#include "CrossingNumber.h"
-#include "Filter.h"
-#include "Minutiae.h"
-#include "Functions.h"
-#include "SQL.h"
+#include "header/AdaptiveLocalThreshold.h"
+#include "header/Ideka.h"
+#include "header/GuoHall.h"
+#include "header/CrossingNumber.h"
+#include "header/Filter.h"
+#include "header/Minutiae.h"
+#include "header/Functions.h"
+#include "header/SQL.h"
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -140,7 +140,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 int main(int argc, const char** argv)
 {
 	
-	 if(argc != 2) {
+	if(argc != 2) {
         std::cout << "Please provide a target file as the parameter..." << std::endl;
         exit(1);
     }

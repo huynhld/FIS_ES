@@ -1,4 +1,4 @@
-#include "AdaptiveLocalThreshold.h"
+#include "../header/AdaptiveLocalThreshold.h"
 
 #include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat, Scalar)
 #include <opencv2/imgproc/imgproc.hpp>

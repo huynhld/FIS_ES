@@ -1,5 +1,5 @@
-#include "CrossingNumber.h"
-#include "Minutiae.h"
+#include "../header/CrossingNumber.h"
+#include "../header/Minutiae.h"
 
 #include <opencv2/core/core.hpp>
 #include <iostream>
@@ -14,8 +14,8 @@ void getMinutiae(Mat& im, std::vector<Minutiae>& minutiae, int border, double di
         border = 2;
     }
 
-    int ridgeEndingCount = 0;
-    int bifurcationCount = 0;
+    //int ridgeEndingCount = 0;
+    //int bifurcationCount = 0;
     for(int i = border; i<=(im.cols-border); i++){
         for(int j = border; j<=(im.rows-border); j++){
             int cn = 0;
@@ -38,18 +38,18 @@ void getMinutiae(Mat& im, std::vector<Minutiae>& minutiae, int border, double di
                     Minutiae minut(i, j, Minutiae::RIDGEENDING);
                     minutiae.push_back(minut);
 					minut.setDirect(directMatrix[i][j]);
-                    ridgeEndingCount++;
+                    //ridgeEndingCount++;
                 }else if(cn == 3){
                     Minutiae minut(i, j, Minutiae::BIFURCATION);
                     minutiae.push_back(minut);
 					minut.setDirect(directMatrix[i][j]);
-                    bifurcationCount++;
+                    //bifurcationCount++;
                 }
             }
         }
     }
-    std::cout<<"Anzahl gefundener Ridge-Endings: " << ridgeEndingCount << std::endl;
-    std::cout<<"Anzahl gefundener Bifurcations: " << bifurcationCount << std::endl;
+    //std::cout<<"Anzahl gefundener Ridge-Endings: " << ridgeEndingCount << std::endl;
+    //std::cout<<"Anzahl gefundener Bifurcations: " << bifurcationCount << std::endl;
 }
 
 
@@ -60,8 +60,8 @@ void getMinutiaeRows(Mat& im, std::vector<Minutiae>& minutiae, int border, doubl
         border = 2;
     }
 
-    int ridgeEndingCount = 0;
-    int bifurcationCount = 0;
+    //int ridgeEndingCount = 0;
+    //int bifurcationCount = 0;
     for(int i = border; i<=(im.cols-border); i++){
         for(int j = border; j<=(im.rows-border); j++){
             int cn = 0;
@@ -84,18 +84,18 @@ void getMinutiaeRows(Mat& im, std::vector<Minutiae>& minutiae, int border, doubl
                     Minutiae minut(i, j, Minutiae::RIDGEENDING);
                     minutiae.push_back(minut);
                     minut.setDirect(directMatrix[i][j]);
-                    ridgeEndingCount++;
+                    //ridgeEndingCount++;
                 }else if(cn == 3){
                     Minutiae minut(i, j, Minutiae::BIFURCATION);
                     minutiae.push_back(minut);
                     minut.setDirect(directMatrix[i][j]);
-                    bifurcationCount++;
+                    //bifurcationCount++;
                 }
             }
         }
     }
-    std::cout<<"Anzahl gefundener Ridge-Endings: " << ridgeEndingCount << std::endl;
-    std::cout<<"Anzahl gefundener Bifurcations: " << bifurcationCount << std::endl;
+    //std::cout<<"Anzahl gefundener Ridge-Endings: " << ridgeEndingCount << std::endl;
+    //std::cout<<"Anzahl gefundener Bifurcations: " << bifurcationCount << std::endl;
 }
 
 

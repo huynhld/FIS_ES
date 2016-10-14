@@ -16,7 +16,7 @@ class SQL {
 		~SQL();
 		void create_table();
 		map<int, vector<Minutiae> > get_all_database();
-		const string minutiae_database_name = "Minutiae.db";
+		string minutiae_database_name;
 		std::vector<Minutiae> get_all();
 		void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
 		int insert_fingerprint();

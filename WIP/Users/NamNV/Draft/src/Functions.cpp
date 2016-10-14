@@ -1,4 +1,4 @@
-#include "Functions.h"
+#include "../header/Functions.h"
 #include <cmath>
 #include <algorithm> 
 #include <iostream>
@@ -35,7 +35,7 @@ Minutiae Functions::GetMinutiaeChanging_UseHoughTransform(vector<Minutiae> minuS
 	int angleSetLength = anglesCount;
 	int length = deltaXSetLength*deltaYSetLength*angleSetLength;
 	int* A = new int[deltaXSetLength*deltaYSetLength*angleSetLength]();
-	std::cout << deltaXSetLength*deltaYSetLength*angleSetLength << std::endl;
+	//std::cout << deltaXSetLength*deltaYSetLength*angleSetLength << std::endl;
 	Minutiae m1;
 	Minutiae m2;
 	double _deltaX;
@@ -46,8 +46,8 @@ Minutiae Functions::GetMinutiaeChanging_UseHoughTransform(vector<Minutiae> minuS
 				A[i*deltaXSetLength*deltaYSetLength + j*deltaXSetLength + k] = 0;
 		}
 	}
-	std::cout << i << "   " << j << "   " << k << std::endl;
-	std::cout << (i-1)*deltaXSetLength*deltaYSetLength + (j-1)*deltaXSetLength + k << std::endl;
+	//std::cout << i << "   " << j << "   " << k << std::endl;
+	//std::cout << (i-1)*deltaXSetLength*deltaYSetLength + (j-1)*deltaXSetLength + k << std::endl;
 	for (i = 0; i < minuSet1.size(); i++)
 	{
 		m1 = (Minutiae)minuSet1[i];

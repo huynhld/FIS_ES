@@ -1,5 +1,5 @@
-#include "Ideka.h"
-#include "GuoHall.h"
+#include "../header/Ideka.h"
+#include "../header/GuoHall.h"
 
 #include <opencv2/core/core.hpp>        // Basic OpenCV structures (cv::Mat, Scalar)
 #include <opencv2/imgproc/imgproc.hpp>

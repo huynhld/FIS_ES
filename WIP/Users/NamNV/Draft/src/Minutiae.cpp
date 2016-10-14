@@ -1,4 +1,4 @@
-#include "Minutiae.h"
+#include "../header/Minutiae.h"
 #include <cmath>
 
 Minutiae::Minutiae(int x, int y, Type t)

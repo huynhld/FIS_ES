@@ -1,4 +1,4 @@
-#include "GuoHall.h"
+#include "../header/GuoHall.h"
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>

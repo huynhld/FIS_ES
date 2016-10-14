@@ -2,14 +2,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
-#include "AdaptiveLocalThreshold.h"
-#include "Ideka.h"
-#include "GuoHall.h"
-#include "CrossingNumber.h"
-#include "Filter.h"
-#include "Minutiae.h"
-#include "Functions.h"
-#include "SQL.h"
+#include "header/AdaptiveLocalThreshold.h"
+#include "header/Ideka.h"
+#include "header/GuoHall.h"
+#include "header/CrossingNumber.h"
+#include "header/Filter.h"
+#include "header/Minutiae.h"
+#include "header/Functions.h"
+#include "header/SQL.h"
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -90,7 +90,7 @@ void LoadImageData(Mat im)
 	}
 	//out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
-	cout << image_mean << endl;
+	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
 }
 
@@ -130,11 +130,11 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
-	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
+	//cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
 
 	//Minutiae-filtering
 	Filter::filterMinutiae(minutiae);
-	std::cout << "After filter: " << minutiae.size() << std::endl;
+	//std::cout << "After filter: " << minutiae.size() << std::endl;
 
 
 
@@ -171,8 +171,14 @@ void show_vector(vector<Minutiae> v) {
 	std::cout << "==============End Vector=========================" << std::endl;
 }
 
-int main()
+int main(int argc, const char** argv)
 {
+	if(argc != 2) {
+        std::cout << "Please provide a image file as the parameter..." << std::endl;
+        exit(1);
+    }
+
+
 	// ---Init data---///
 	double scaleSet[] = { 0.8,0.9,1.0,1.1,1.2 };
 	int angleStart = -30;
@@ -221,9 +227,12 @@ int main()
 	//-- End Init Data -- //	
 	vector<Minutiae> minutiaeOne;
 	vector<Minutiae> minutiaeTwo;
-	getMinutiae(minutiaeOne, "/home/namte/Desktop/Untitled Folder 2/namtetest.bmp");
+	int result = getMinutiae(minutiaeOne, argv[1]);
+	if(result == -1) {
+		return 0;
+	}
 	//getMinutiae(minutiaeTwo, "/home/namte/Desktop/Untitled Folder 2/namte.bmp");
-	show_vector(minutiaeTwo);
+	//show_vector(minutiaeTwo);
 	//show_vector(minutiaeOne);
 	//SQL sql;
 	//sql.create_table();
@@ -241,7 +250,7 @@ int main()
 	SQL sql;
     sql.create_table();   
     map<int, vector<Minutiae> > map_data = sql.get_all_database();
-    if(map_data.size() == 0) {
+    if(map_data.size() == 0 || minutiaeOne.size() == 0) {
     	cout << "Not found" << endl;
     }else {
     	std::map<int, vector<Minutiae> >::iterator iterator;
@@ -281,9 +290,9 @@ int main()
 		// }
   //   }
 	if (max_count >= 10)
-		cout << "Hai vân tay trùng khớp ID : " << finger_id_exist << endl;
+		cout << "Welcome : " << finger_id_exist << endl;
 	else
-		cout << "Hai vân tay không trùng khớp : " << max_count << endl;
+		cout << "User Not found!" << endl;
 
 	return 0;
 

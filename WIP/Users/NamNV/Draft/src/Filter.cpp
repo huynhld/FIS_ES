@@ -1,4 +1,4 @@
-#include "Filter.h"
+#include "../header/Filter.h"
 
 #include <math.h>
 #include <iostream>
@@ -40,7 +40,7 @@ namespace Filter{
 
         }
         minutiae = minutiaeNew;
-        std::cout<<"Anzahl gelöschter Minutien: " << cnt << std::endl;
+        //std::cout<<"Anzahl gelöschter Minutien: " << cnt << std::endl;
     }
 
     double euclideanDistance(int x1, int y1, int x2, int y2){

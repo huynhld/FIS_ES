@@ -1,4 +1,4 @@
-#include "SQL.h"
+#include "../header/SQL.h"
 
 void SQL::create_table()
 {
@@ -38,6 +38,7 @@ void SQL::create_table()
 
 SQL::SQL()
 {
+	this->minutiae_database_name = "Minutiae.db";
 	this->is_database_error = sqlite3_open(this->minutiae_database_name.c_str(), &db);
 }
 
@@ -58,7 +59,7 @@ map<int, vector<Minutiae> > SQL::get_all_database()
 		sqlite3_close(db);
 		return minutiae_map;
 	}
-	cout << sqlite3_column_table_name(pStmt,0) << endl;
+	//cout << sqlite3_column_table_name(pStmt,0) << endl;
 	Minutiae q;
 	int fingerprint_id = 0;
 	// For each row returned

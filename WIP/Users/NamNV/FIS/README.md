@@ -1,5 +1,5 @@
 # Guideline to build project
-Change directory to the build folder and then run command
+Change directory to the **build** folder and then run command
 
 > cmake ..
 

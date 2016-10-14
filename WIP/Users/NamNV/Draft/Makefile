@@ -1,6 +1,7 @@
 all : AdaptiveLocalThreshold.o Ideka.o GuoHall.o CrossingNumber.o Filter.o Minutiae.o Functions.o BinarisationTest.cpp FingerPrintProcess SQL
 	g++ BinarisationTest.cpp AdaptiveLocalThreshold.o Functions.o Ideka.o GuoHall.o CrossingNumber.o Filter.o Minutiae.o SQL.o -lsqlite3 `pkg-config --libs --cflags opencv` -o BinarisationTest
-
+InsertDataToSQL: InsertDataToSQL.cpp AdaptiveLocalThreshold.o Ideka.o GuoHall.o CrossingNumber.o Filter.o Minutiae.o Functions.o BinarisationTest.cpp FingerPrintProcess SQL
+	g++ InsertDataToSQL.cpp AdaptiveLocalThreshold.o Functions.o Ideka.o GuoHall.o CrossingNumber.o Filter.o Minutiae.o SQL.o -lsqlite3 `pkg-config --libs --cflags opencv` -o InsertDataToSQL
 AdaptiveLocalThreshold : AdaptiveLocalThreshold.cpp AdaptiveLocalThreshold.h
 	g++ -c AdaptiveLocalThreshold.cpp
 CrossingNumber: CrossingNumber.cpp CrossingNumber.h Minutiae.h Minutiae.cpp

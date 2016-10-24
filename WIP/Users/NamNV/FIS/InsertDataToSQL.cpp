@@ -11,6 +11,7 @@
 #include "header/Functions.h"
 #include "header/SQL.h"
 #include "header/synoapi.h"
+#include <ctime>
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -21,10 +22,9 @@ int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 
-
 const int angleLimit = 5;
-const int distanceLimit = 15;
-const int minuNumberLimit = 14; 
+const int distanceLimit = 25;
+const int minuNumberLimit = 10; 
 double image_mean = 50;
 double image_variance = 300;
 
@@ -92,9 +92,10 @@ void LoadImageData(Mat im)
 	}
 	//out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
-	cout << image_mean << endl;
+	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
 }
+
 
 
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
@@ -109,24 +110,26 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 		return -1;
 	}
 
-	
+	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
 	//normalization(img, 50, 300);
-	
-	localThreshold::binarisation(img, 25, 28);
+	//imshow("After", img); waitKey(0);
+	//cv::cvtColor(img, img, CV_RGB2GRAY);
+	//imshow("After", img); waitKey(0);
+	localThreshold::binarisation(img, 26, 29);
 	//binarisation(img);
-	
+	//imshow("After binarisation", img); waitKey(0);
 	cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
 	Mat binImg = img.clone();
 	ideka::binOptimisation(img);
-
+	//imshow("After binOptimisation", img); waitKey(0);
 
 	//skeletionizing
 	cv::bitwise_not(img, img);    //Inverse for bit-operations
 	GuoHall::thinning(img);
 	cv::bitwise_not(img, img);
-
+	//imshow("After thinning", img); waitKey(0);
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
 	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
@@ -134,13 +137,93 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	//Minutiae-filtering
 	Filter::filterMinutiae(minutiae);
 	std::cout << "After filter: " << minutiae.size() << std::endl;
+
+
+
+    // Mat minutImg2 = img.clone();
+    // cvtColor(img, minutImg2, CV_GRAY2RGB);
+    // for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
+    //     //add an transparent square at each minutiae-location
+    //     int squareSize = 5;     //has to be uneven
+    //     Mat roi = minutImg2(Rect(minutiae[i].getLocX()-squareSize/2, minutiae[i].getLocY()-squareSize/2, squareSize, squareSize));
+    //     double alpha = 0.3;
+    //     if(minutiae[i].getType() == Minutiae::RIDGEENDING){
+    //         Mat color(roi.size(), CV_8UC3, cv::Scalar(255,0,0));    //blue square for ridgeending
+    //         addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
+    //         //iRIDGEENDING++;
+    //     }else if(minutiae[i].getType() == Minutiae::BIFURCATION){
+    //         Mat color(roi.size(), CV_8UC3, cv::Scalar(0,0,255));    //red square for bifurcation
+    //         addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
+    //         //iBIFURCATION++;
+    //     }
+
+    // }
+    // //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
+    // imshow( "After get", minutImg2 );   waitKey(0);                //
 	return 0;
 }
 
 
+
+void show_vector(vector<Minutiae> v) {
+	std::cout << "==============Start Vector=======================" << std::endl;
+	for(int i = 0; i < v.size(); i++) {
+		std::cout << v[i].getLocX() << " : " << v[i].getLocY() << " : " <<  v[i].getDirect() << std::endl;
+	}
+	std::cout << "==============End Vector=========================" << std::endl;
+}
+
 int main(int argc, const char** argv)
 {
 	
+
+	// ---Init data---///
+	double scaleSet[] = { 0.8,0.9,1.0,1.1,1.2 };
+	int angleStart = -30;
+	int angleUnit = 3;
+	int angleFinish = 30;
+	int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
+	int angleSet[anglesCount];
+	int i = 0;
+	int angle = angleStart;
+	while (i < anglesCount)
+	{
+		angleSet[i] = angle;
+		i++;
+		angle += angleUnit;
+	}
+	//DELTAXSET
+	int deltaXStart = -IMAGE_WIDTH;
+	int deltaXFinish = IMAGE_WIDTH;
+	int deltaXUnit = 2;
+	int deltaXCount = (int)((deltaXFinish - deltaXStart) / deltaXUnit) + 1;
+	int deltaXSet[deltaXCount];
+	i = 0;
+	int deltaX = deltaXStart;
+	while (i < deltaXCount)
+	{
+		deltaXSet[i] = deltaX;
+		i++;
+		deltaX += deltaXUnit;
+	}
+	//DELTAYSET
+	int deltaYStart = -IMAGE_HEIGHT;
+	int deltaYFinish = IMAGE_HEIGHT;
+	int deltaYUnit = 2;
+	int deltaYCount = round((deltaYFinish - deltaYStart) / deltaYUnit) + 1;
+	int deltaYSet[deltaYCount];
+	i = 0;
+	int deltaY = deltaYStart;
+	while (i < deltaYCount)
+	{
+		deltaYSet[i] = deltaY;
+		i++;
+		deltaY += deltaYUnit;
+	}
+
+
+	//-- End Init Data -- //	
+
 	SynoApi *api = new SynoApi();
 	if(!api->is_opened()) {
 		api->show_message(-1);
@@ -151,25 +234,57 @@ int main(int argc, const char** argv)
 		api->show_message(ret);
 		return 0;
 	}
-	ret = api->upload_img();
+	ret = api->upload_img("fingerprintimage.bmp");
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+
+
+	ret = api->get_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	ret = api->upload_img("fingerprintimagetwo.bmp");
 	if(ret != PS_OK) {
 		api->show_message(ret);
 		return 0;
 	}
 
 	vector<Minutiae> minutiaeOne;
+	vector<Minutiae> minutiaeTwo;
 	std::string imgPath( "./fingerprintimage.bmp");
+	std::string imgPathTwo( "./fingerprintimagetwo.bmp");
 	getMinutiae(minutiaeOne, imgPath);
-	SQL sql;
-	sql.create_table();
-	// void create_table();
-	// 	void get_all_database();
-	// 	const string minutiae_database_name = "Minutiae.db";
-	// 	std::vector<Minutiae> get_all();
-	// 	void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
-	// 	int insert_fingerprint();
-	int personid = sql.insert_fingerprint();
-	sql.insert_minutiae(minutiaeOne, personid);
+	getMinutiae(minutiaeTwo, imgPathTwo);
+	Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
+							minutiaeTwo, angleSet, deltaXSet,
+							deltaYSet, anglesCount, deltaXCount,
+							deltaYCount, angleLimit * PI / 180,
+							IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+	int count = Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
+					minuResult, distanceLimit, angleLimit * PI / 180);
+	if(count >= 10) {
+		SQL sql;
+		sql.create_table();
+		// void create_table();
+		// 	void get_all_database();
+		// 	const string minutiae_database_name = "Minutiae.db";
+		// 	std::vector<Minutiae> get_all();
+		// 	void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
+		// 	int insert_fingerprint();
+		int personid = sql.insert_fingerprint();
+		sql.insert_minutiae(minutiaeOne, personid);
+		sql.insert_minutiae(minutiaeTwo, personid);
+		show_vector(minutiaeOne);
+		cout << "Insert sucess user id: " << personid << endl;
+		remove( "./fingerprintimage.bmp" );
+		remove( "./fingerprintimagetwo.bmp" );
+	}else {
+		cout << "Two fingerprint not match! " << count << endl;
+	}
+	
 
 	// int max_count = 0;
 	// int count = 0;
@@ -188,10 +303,10 @@ int main(int argc, const char** argv)
 	// 	    show_vector(v);
 	// ---Init data---///
 	
-	if( remove( "./fingerprintimage.bmp" ) != 0 )
-    	std::cout << "Error deleting file" << std::endl;
-	else
-    	std::cout << "File successfully deleted" << std::endl;
+	// if( remove( "./fingerprintimage.bmp" ) != 0 )
+ //    	std::cout << "Error deleting file" << std::endl;
+	// else
+ //    	std::cout << "File successfully deleted" << std::endl;
 
 	return 0;
 

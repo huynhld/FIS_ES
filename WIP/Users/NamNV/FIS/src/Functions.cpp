@@ -15,7 +15,7 @@ bool Functions::IsMinutiaeMatching(Minutiae m1,
 
 
 Minutiae Functions::GetMinutiaeChanging_UseHoughTransform(vector<Minutiae> minuSet1,
-	vector<Minutiae> minuSet2, int angleSet[21], int deltaXSet[], int deltaYSet[], int anglesCount, int deltaXCount, int deltaYCount,
+	vector<Minutiae> minuSet2, int angleSet[], int deltaXSet[], int deltaYSet[], int anglesCount, int deltaXCount, int deltaYCount,
 	double angleLimit, int xRoot, int yRoot)
 {
 	//int Height = 375;
@@ -142,5 +142,8 @@ int Functions::CountMinuMatching(vector<Minutiae> minuSet1, vector<Minutiae> min
 	int count = 0;
 	for (i = 0; i < minuSet2.size(); i++)
 		if (mark[i]) count++;
+	if(mark != NULL) {
+		delete mark;
+	}
 	return count;
 }

@@ -243,7 +243,7 @@ int SynoApi::get_img() {
 	return return_code;
 }
 
-int SynoApi::upload_img() {
+int SynoApi::upload_img(std::string image_path) {
 	unsigned char  iGetData[MAX_PACKAGE_SIZE];
 	std::cout << "upload_img start : " << std::endl;
 	int size = 0;
@@ -276,7 +276,7 @@ int SynoApi::upload_img() {
 		PacketNum++;
 	}
 	while ( iGetData[0] != ENDDATA );
-	PSImgData2BMP(ImgData,"./fingerprintimage.bmp");
+	PSImgData2BMP(ImgData, image_path.c_str());
 	return return_code;
 }
 

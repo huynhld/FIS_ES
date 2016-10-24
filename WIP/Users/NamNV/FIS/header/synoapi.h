@@ -56,7 +56,7 @@ class SynoApi {
 		SynoApi();
 		~SynoApi();
 		int get_img();
-		int upload_img();
+		int upload_img(std::string image_path);
 		void show_message(int ret);
 		bool is_opened();
 

@@ -65,6 +65,7 @@ map<int, vector<Minutiae> > SQL::get_all_database()
 	// For each row returned
 	while (sqlite3_step(pStmt) == SQLITE_ROW)
 	{
+		fingerprint_id = 0;
 		for(int jj=0; jj < sqlite3_column_count(pStmt); jj++)
 		{
 			string column_name = sqlite3_column_name(pStmt,jj);

@@ -11,6 +11,7 @@
 #include "header/Functions.h"
 #include "header/SQL.h"
 #include "header/synoapi.h"
+#include <ctime>
 #include <stdio.h>
 using namespace cv;
 using namespace std;
@@ -22,7 +23,7 @@ int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 
 const int angleLimit = 5;
-const int distanceLimit = 15;
+const int distanceLimit = 25;
 const int minuNumberLimit = 14; 
 double image_mean = 50;
 double image_variance = 300;
@@ -72,7 +73,7 @@ void GetDirectionMatrix(int widthSqare)
 		}
 	}
 	//return directMatrix;
-
+	
 }
 
 void LoadImageData(Mat im)
@@ -93,6 +94,34 @@ void LoadImageData(Mat im)
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
 	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
+	// int WindowSize = 9;
+	// for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
+ //        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
+ //            cv::Rect roi(i, j, WindowSize, WindowSize);
+
+ //            cv::Mat roiImage = im(roi);
+ //            //double direction = calculateDirectionForWindow(roiImage);
+
+ //            // TODO: Refactor direction drawing into own function
+ //            // direction = i % 360; // for testing
+ //            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
+ //            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
+ //                                                             // in math, +y is typically
+ //                                                             // considered to go in the top
+ //                                                             // direction whereas in the image
+ //                                                             // it goes towards the bottom
+
+ //            cv::Point p1(
+ //                         WindowSize/2 + ((WindowSize/4)*xDir),
+ //                         WindowSize/2 + ((WindowSize/4)*yDir));
+ //            cv::Point p2(
+ //                         WindowSize/2 - ((WindowSize/4)*xDir),
+ //                         WindowSize/2 - ((WindowSize/4)*yDir));
+ //            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
+ //            cv::line(roiImage, p1, p2,  1);
+ //        }
+ //    }
+ //    imshow("Direction Field", im); waitKey(0);
 }
 
 
@@ -116,26 +145,26 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	//imshow("After", img); waitKey(0);
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	//imshow("After", img); waitKey(0);
-	localThreshold::binarisation(img, 25, 28);
+	localThreshold::binarisation(img, 26, 29);
 	//binarisation(img);
-	//imshow("binarisation", img); waitKey(0);
+	//imshow("After binarisation", img); waitKey(0);
 	cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
 	Mat binImg = img.clone();
 	ideka::binOptimisation(img);
-
+	//imshow("After binOptimisation", img); waitKey(0);
 
 	//skeletionizing
 	cv::bitwise_not(img, img);    //Inverse for bit-operations
 	GuoHall::thinning(img);
 	cv::bitwise_not(img, img);
-
+	//imshow("After thinning", img); waitKey(0);
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
-	//cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
+	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
 
 	//Minutiae-filtering
 	Filter::filterMinutiae(minutiae);
-	//std::cout << "After filter: " << minutiae.size() << std::endl;
+	std::cout << "After filter: " << minutiae.size() << std::endl;
 
 
 
@@ -157,8 +186,8 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //     }
 
     // }
-    //  namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
-    // imshow( "Minutien gefiltert", minutImg2 );                 //
+    // //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
+    // imshow( "After get", minutImg2 );   waitKey(0);                //
 	return 0;
 }
 
@@ -179,6 +208,7 @@ int main(int argc, const char** argv)
  //        exit(1);
  //    }
 
+	clock_t tStart = clock();
     SynoApi *api = new SynoApi();
 	if(!api->is_opened()) {
 		api->show_message(-1);
@@ -189,10 +219,13 @@ int main(int argc, const char** argv)
 		api->show_message(ret);
 		return 0;
 	}
-	ret = api->upload_img();
+	ret = api->upload_img("fingerprintimage.bmp");
 	if(ret != PS_OK) {
 		api->show_message(ret);
 		return 0;
+	}
+	if(api != NULL) {
+		delete api;
 	}
 
 	// ---Init data---///
@@ -201,7 +234,7 @@ int main(int argc, const char** argv)
 	int angleUnit = 3;
 	int angleFinish = 30;
 	int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
-	int angleSet[21];
+	int angleSet[anglesCount];
 	int i = 0;
 	int angle = angleStart;
 	while (i < anglesCount)
@@ -260,7 +293,7 @@ int main(int argc, const char** argv)
 	// 	int insert_fingerprint();
 	//int personid = sql.insert_fingerprint();
 	//sql.insert_minutiae(minutiaeOne, personid);
-	int max_count = 0;
+	int max_count = -1;
 	int count = 0;
 	int finger_id_exist = -1;
 	SQL sql;
@@ -279,13 +312,11 @@ int main(int argc, const char** argv)
 				v, angleSet, deltaXSet,
 				deltaYSet, anglesCount, deltaXCount,
 				deltaYCount, angleLimit * PI / 180,
-				IMAGE_ROWS / 2, IMAGE_COLUMNS / 2);
+				IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
 			int count = Functions::CountMinuMatching(minutiaeOne , v,
 				minuResult, distanceLimit, angleLimit * PI / 180);
-			if(count >= max_count) {
+			if(count > max_count && count >= minuNumberLimit) {
 				max_count = count;
-			}
-			if (count >= 10) {
 				finger_id_exist = iterator->first;
 			}
 		}
@@ -305,17 +336,17 @@ int main(int argc, const char** argv)
 			// }
 		// }
   //   }
-	if (max_count >= 10)
-		cout << "Welcome : " << finger_id_exist << endl;
+	if (max_count >= minuNumberLimit)
+		cout << "Welcome : " << finger_id_exist << " : " << max_count << endl;
 	else
 	{
-		cout << "User Not found!" << endl;
+		cout << "User Not found!"  << endl;
 	}
+	//cout << "Found : " << map_data.size() << " Fingerprint in database" << endl;
 
-	if( remove( "./fingerprintimage.bmp" ) != 0 )
-    	std::cout << "Error deleting file" << std::endl;
-	else
-    	std::cout << "File successfully deleted" << std::endl;
+	remove( "./fingerprintimage.bmp" );
+
+    printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	return 0;
 
 }

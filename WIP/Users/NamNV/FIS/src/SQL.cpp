@@ -7,6 +7,7 @@ void SQL::create_table()
 	sql_finger_print_table.append(" description TEXT)");
 	string sql_minutiae_table = "CREATE TABLE IF NOT EXISTS Minutiae(id INTEGER PRIMARY KEY AUTOINCREMENT,";
 	sql_minutiae_table.append(" fingerprint_id INT,");
+	sql_minutiae_table.append(" attemped INT,");
 	sql_minutiae_table.append(" munitiae BLOB,");
 	sql_minutiae_table.append(" FOREIGN KEY(fingerprint_id) REFERENCES FingerPrint(id))");
 
@@ -47,9 +48,9 @@ SQL::~SQL()
 	sqlite3_close(db);
 }
 
-map<int, vector<Minutiae> > SQL::get_all_database()
+map<std::string, vector<Minutiae> > SQL::get_all_database()
 {
-	map<int, vector<Minutiae> > minutiae_map;
+	map<std::string, vector<Minutiae> > minutiae_map;
 	string sql = "SELECT * FROM Minutiae";
 	sqlite3_stmt *pStmt;
 	is_database_error = sqlite3_prepare_v2(db, sql.c_str(), sql.length() + 1, &pStmt, NULL);
@@ -62,10 +63,14 @@ map<int, vector<Minutiae> > SQL::get_all_database()
 	//cout << sqlite3_column_table_name(pStmt,0) << endl;
 	Minutiae q;
 	int fingerprint_id = 0;
+	int attemp = 0;
+	string key = "";
 	// For each row returned
 	while (sqlite3_step(pStmt) == SQLITE_ROW)
 	{
 		fingerprint_id = 0;
+		attemp = 0;
+		key = "";
 		for(int jj=0; jj < sqlite3_column_count(pStmt); jj++)
 		{
 			string column_name = sqlite3_column_name(pStmt,jj);
@@ -73,10 +78,13 @@ map<int, vector<Minutiae> > SQL::get_all_database()
 				fingerprint_id = sqlite3_column_int(pStmt, jj);
 			}else if(column_name.compare("munitiae") == 0) {
 				q = *(Minutiae*) ( sqlite3_column_blob(pStmt, jj) );
+			}else if(column_name.compare("attemped") == 0) {
+				attemp = sqlite3_column_int(pStmt, jj);
 			}
 		}
+		key = std::to_string(fingerprint_id) + ":" + std::to_string(attemp);
 		q.setFingerPrintId(fingerprint_id);
-		minutiae_map[fingerprint_id].push_back(q);
+		minutiae_map[key].push_back(q);
 	}
 	sqlite3_finalize(pStmt);
 
@@ -85,19 +93,21 @@ map<int, vector<Minutiae> > SQL::get_all_database()
 }
 
 
-void SQL::insert_minutiae(std::vector<Minutiae> v, int fingerprint_id)
+void SQL::insert_minutiae(std::vector<Minutiae> v, int fingerprint_id, int attemped)
 {
 	for(int i = 0; i < v.size(); i++) {
-		string sql = "INSERT INTO Minutiae(fingerprint_id, munitiae) VALUES(@id,@munitiae)";
+		string sql = "INSERT INTO Minutiae(fingerprint_id, munitiae,attemped) VALUES(@id,@munitiae,@attemped)";
 	//SELECT Id, Name FROM Cars WHERE Id = @id
 		sqlite3_stmt *pStmt;
 		const char  **pzTail;
 		is_database_error = sqlite3_prepare_v2(db, sql.c_str(), -1, &pStmt, 0);
 		if (is_database_error == SQLITE_OK) {
 			int fingerprint_id_idx = sqlite3_bind_parameter_index(pStmt, "@id");
+			int attemped_idx = sqlite3_bind_parameter_index(pStmt, "@attemped");
 			int munitiae_idx = sqlite3_bind_parameter_index(pStmt, "@munitiae");
 			sqlite3_bind_blob(pStmt, munitiae_idx, &v[i], sizeof(Minutiae), SQLITE_TRANSIENT);
 			sqlite3_bind_int(pStmt, fingerprint_id_idx, fingerprint_id);
+			sqlite3_bind_int(pStmt, attemped_idx, attemped);
 			sqlite3_step(pStmt);
 			sqlite3_finalize(pStmt);
 			sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);

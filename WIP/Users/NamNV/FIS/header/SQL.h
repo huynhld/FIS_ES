@@ -15,10 +15,10 @@ class SQL {
 		SQL();
 		~SQL();
 		void create_table();
-		map<int, vector<Minutiae> > get_all_database();
+		map<std::string, vector<Minutiae> > get_all_database();
 		string minutiae_database_name;
 		std::vector<Minutiae> get_all();
-		void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
+		void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id, int attemped);
 		int insert_fingerprint();
 	private:
 		sqlite3 *db;

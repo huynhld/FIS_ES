@@ -6,7 +6,7 @@
 namespace Filter{
 
     void filterMinutiae(std::vector<Minutiae>& minutiae){
-        double minDistanceForMinutiae = 8.1;
+        double minDistanceForMinutiae = 10;
         bool same = true;
         //calculate for every minutiae the distance to all other minutiae
         for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){

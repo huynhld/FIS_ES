@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/np/src/header/TrainingData.h
+vector
+-
+iostream
+-
+cstdlib
+-
+cassert
+-
+cmath
+-
+fstream
+-
+sstream
+-
+string
+-
+
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/np/src/model/TrainningData.cpp
+../header/TrainingData.h
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/np/src/header/TrainingData.h
+

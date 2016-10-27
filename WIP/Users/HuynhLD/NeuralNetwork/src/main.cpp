@@ -460,8 +460,8 @@ void showVectorVals(std::string label, t_vals &v)
 
 int main()
 {
-    TrainingData trainData("trainsample/fingerp");
-    //TrainingData trainData("trainsample/out_xor.txt");
+    //TrainingData trainData("trainsample/fingerp");
+    TrainingData trainData("trainsample/out_xor.txt");
     // TrainingData trainData("trainsample/out_and.txt");
     // TrainingData trainData("trainsample/out_or.txt");
     // TrainingData trainData("trainsample/out_no.txt");

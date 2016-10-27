@@ -13,6 +13,7 @@
 #include "header/synoapi.h"
 #include <ctime>
 #include <stdio.h>
+#include <sstream>
 using namespace cv;
 using namespace std;
 
@@ -280,6 +281,7 @@ int main(int argc, const char** argv)
 	if(result == -1) {
 		return 0;
 	}
+	show_vector(minutiaeOne);
 	//getMinutiae(minutiaeTwo, "/home/namte/Desktop/Untitled Folder 2/namte.bmp");
 	//show_vector(minutiaeTwo);
 	//show_vector(minutiaeOne);
@@ -296,18 +298,19 @@ int main(int argc, const char** argv)
 	int max_count = -1;
 	int count = 0;
 	int finger_id_exist = -1;
+	float percent = 1;
 	SQL sql;
     sql.create_table();   
-    map<int, vector<Minutiae> > map_data = sql.get_all_database();
+    map<std::string, vector<Minutiae> > map_data = sql.get_all_database();
     if(map_data.size() == 0 || minutiaeOne.size() == 0) {
     	cout << "Not found" << endl;
     }else {
-    	std::map<int, vector<Minutiae> >::iterator iterator;
+    	std::map<std::string, vector<Minutiae> >::iterator iterator;
 		for(iterator = map_data.begin(); iterator != map_data.end(); iterator++) {
 		    // iterator->first = key
 		    // iterator->second = value
 		    vector<Minutiae> v = static_cast<vector<Minutiae> > (iterator->second);
-		    //show_vector(v);
+		    show_vector(v);
 		    Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
 				v, angleSet, deltaXSet,
 				deltaYSet, anglesCount, deltaXCount,
@@ -315,9 +318,15 @@ int main(int argc, const char** argv)
 				IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
 			int count = Functions::CountMinuMatching(minutiaeOne , v,
 				minuResult, distanceLimit, angleLimit * PI / 180);
-			if(count > max_count && count >= minuNumberLimit) {
+			float current_percent = static_cast<float>(minutiaeOne.size() - count)/minutiaeOne.size();
+			cout << "Percent: " << current_percent << " + id: " << static_cast<std::string>(iterator->first) << " Count: " << count << endl;
+			if(current_percent < 0.80 && current_percent < percent) {
+				std::string key = static_cast<std::string>(iterator->first);
+				std::istringstream is(key);
+				is >> finger_id_exist;
+				percent = current_percent;
 				max_count = count;
-				finger_id_exist = iterator->first;
+				//finger_id_exist = 0;
 			}
 		}
 	}
@@ -336,7 +345,7 @@ int main(int argc, const char** argv)
 			// }
 		// }
   //   }
-	if (max_count >= minuNumberLimit)
+	if (percent < 0.80)
 		cout << "Welcome : " << finger_id_exist << " : " << max_count << endl;
 	else
 	{

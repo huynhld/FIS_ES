@@ -252,20 +252,43 @@ int main(int argc, const char** argv)
 		return 0;
 	}
 
+	ret = api->get_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	ret = api->upload_img("fingerprintimagethree.bmp");
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+
 	vector<Minutiae> minutiaeOne;
 	vector<Minutiae> minutiaeTwo;
+	vector<Minutiae> minutiaeThree;
 	std::string imgPath( "./fingerprintimage.bmp");
 	std::string imgPathTwo( "./fingerprintimagetwo.bmp");
+	std::string imgPathThree( "./fingerprintimagethree.bmp");
 	getMinutiae(minutiaeOne, imgPath);
 	getMinutiae(minutiaeTwo, imgPathTwo);
+	getMinutiae(minutiaeThree, imgPathThree);
 	Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
 							minutiaeTwo, angleSet, deltaXSet,
 							deltaYSet, anglesCount, deltaXCount,
 							deltaYCount, angleLimit * PI / 180,
 							IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
-	int count = Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
+
+	Minutiae minuResultThree = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
+							minutiaeThree, angleSet, deltaXSet,
+							deltaYSet, anglesCount, deltaXCount,
+							deltaYCount, angleLimit * PI / 180,
+							IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+
+	int countTwo = Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
 					minuResult, distanceLimit, angleLimit * PI / 180);
-	if(count >= 10) {
+	int countThree = Functions::CountMinuMatching(minutiaeOne , minutiaeThree,
+					minuResultThree, distanceLimit, angleLimit * PI / 180);
+	if(countTwo >= 10 && countThree >= 10) {
 		SQL sql;
 		sql.create_table();
 		// void create_table();
@@ -275,14 +298,16 @@ int main(int argc, const char** argv)
 		// 	void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
 		// 	int insert_fingerprint();
 		int personid = sql.insert_fingerprint();
-		sql.insert_minutiae(minutiaeOne, personid);
-		sql.insert_minutiae(minutiaeTwo, personid);
+		sql.insert_minutiae(minutiaeOne, personid, 0);
+		sql.insert_minutiae(minutiaeTwo, personid, 1);
+		sql.insert_minutiae(minutiaeThree, personid, 2);
 		show_vector(minutiaeOne);
 		cout << "Insert sucess user id: " << personid << endl;
 		remove( "./fingerprintimage.bmp" );
 		remove( "./fingerprintimagetwo.bmp" );
+		remove( "./fingerprintimagethree.bmp" );
 	}else {
-		cout << "Two fingerprint not match! " << count << endl;
+		cout << "Two fingerprint not match! " << countTwo << " : " << countThree << endl;
 	}
 	
 

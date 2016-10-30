@@ -3,7 +3,6 @@ project (Trainning)
 add_definitions( "-std=c++11" )
 
 
-
 include_directories ("${PROJECT_SOURCE_DIR}/model")
 add_subdirectory(model)
 

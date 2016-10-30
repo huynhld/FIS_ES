@@ -95,34 +95,34 @@ void LoadImageData(Mat im)
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
 	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
-	// int WindowSize = 9;
-	// for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
- //        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
- //            cv::Rect roi(i, j, WindowSize, WindowSize);
+	int WindowSize = 26;
+	for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
+        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
+            cv::Rect roi(i, j, WindowSize, WindowSize);
 
- //            cv::Mat roiImage = im(roi);
- //            //double direction = calculateDirectionForWindow(roiImage);
+            cv::Mat roiImage = im(roi);
+            //double direction = calculateDirectionForWindow(roiImage);
 
- //            // TODO: Refactor direction drawing into own function
- //            // direction = i % 360; // for testing
- //            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
- //            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
- //                                                             // in math, +y is typically
- //                                                             // considered to go in the top
- //                                                             // direction whereas in the image
- //                                                             // it goes towards the bottom
+            // TODO: Refactor direction drawing into own function
+            // direction = i % 360; // for testing
+            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
+            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
+                                                             // in math, +y is typically
+                                                             // considered to go in the top
+                                                             // direction whereas in the image
+                                                             // it goes towards the bottom
 
- //            cv::Point p1(
- //                         WindowSize/2 + ((WindowSize/4)*xDir),
- //                         WindowSize/2 + ((WindowSize/4)*yDir));
- //            cv::Point p2(
- //                         WindowSize/2 - ((WindowSize/4)*xDir),
- //                         WindowSize/2 - ((WindowSize/4)*yDir));
- //            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
- //            cv::line(roiImage, p1, p2,  1);
- //        }
- //    }
- //    imshow("Direction Field", im); waitKey(0);
+            cv::Point p1(
+                         WindowSize/2 + ((WindowSize/4)*xDir),
+                         WindowSize/2 + ((WindowSize/4)*yDir));
+            cv::Point p2(
+                         WindowSize/2 - ((WindowSize/4)*xDir),
+                         WindowSize/2 - ((WindowSize/4)*yDir));
+            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
+            cv::line(roiImage, p1, p2,  1);
+        }
+    }
+    imshow("Direction Field", im); waitKey(0);
 }
 
 
@@ -209,25 +209,25 @@ int main(int argc, const char** argv)
  //        exit(1);
  //    }
 
-	clock_t tStart = clock();
-    SynoApi *api = new SynoApi();
-	if(!api->is_opened()) {
-		api->show_message(-1);
-		return 0;
-	}
-	int ret = api->get_img();
-	if(ret != PS_OK) {
-		api->show_message(ret);
-		return 0;
-	}
-	ret = api->upload_img("fingerprintimage.bmp");
-	if(ret != PS_OK) {
-		api->show_message(ret);
-		return 0;
-	}
-	if(api != NULL) {
-		delete api;
-	}
+	  clock_t tStart = clock();
+ //    SynoApi *api = new SynoApi();
+	// if(!api->is_opened()) {
+	// 	api->show_message(-1);
+	// 	return 0;
+	// }
+	// int ret = api->get_img();
+	// if(ret != PS_OK) {
+	// 	api->show_message(ret);
+	// 	return 0;
+	// }
+	// ret = api->upload_img("fingerprintimage.bmp");
+	// if(ret != PS_OK) {
+	// 	api->show_message(ret);
+	// 	return 0;
+	// }
+	// if(api != NULL) {
+	// 	delete api;
+	// }
 
 	// ---Init data---///
 	double scaleSet[] = { 0.8,0.9,1.0,1.1,1.2 };
@@ -277,7 +277,7 @@ int main(int argc, const char** argv)
 	//-- End Init Data -- //	
 	vector<Minutiae> minutiaeOne;
 	vector<Minutiae> minutiaeTwo;
-	int result = getMinutiae(minutiaeOne, "./fingerprintimage.bmp");
+	int result = getMinutiae(minutiaeOne, "/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/img_l_1_2");
 	if(result == -1) {
 		return 0;
 	}

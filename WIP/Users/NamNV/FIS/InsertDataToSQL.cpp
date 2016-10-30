@@ -24,7 +24,7 @@ int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 const int maskNumber = 32;
-const int angleLimit = 5;
+const int angleLimit = 90;
 const int distanceLimit = 30;
 const int minuNumberLimit = 14;
 const int f = 7;
@@ -241,7 +241,9 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 		cout << "Could not open or find the image" << endl;
 		return -1;
 	}
-
+	memset(ImageData, 0, sizeof(ImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
+	//memset(SouceImageData, 0, sizeof(SouceImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
+	memset(directMatrix, 0, sizeof(directMatrix[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
 	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
@@ -421,11 +423,11 @@ int main(int argc, const char** argv)
 
 	int countTwo = Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
 					minuResult, distanceLimit, angleLimit * PI / 180);
-	int countThree = Functions::CountMinuMatching(minutiaeOne , minutiaeThree,
+	int countThree = Functions::CountMinuMatching(minutiaeTwo , minutiaeThree,
 					minuResultThree, distanceLimit, angleLimit * PI / 180);
 	float current_percent_one = static_cast<float>(minutiaeOne.size() - countTwo)/minutiaeOne.size();
 	float current_percent_two = static_cast<float>(minutiaeTwo.size() - countThree)/minutiaeTwo.size();
-	if(current_percent_one < 0.85 && current_percent_two < 0.85) {
+	if(current_percent_one < 0.60 && current_percent_two < 0.60) {
 		SQL sql;
 		sql.create_table();
 		// void create_table();
@@ -440,11 +442,14 @@ int main(int argc, const char** argv)
 		sql.insert_minutiae(minutiaeThree, personid, 2);
 		show_vector(minutiaeOne);
 		cout << "Insert sucess user id: " << personid << endl;
+		cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo
+			 << " : " << current_percent_two << "-" << countThree << endl;
 		remove( "./fingerprintimage.bmp" );
 		remove( "./fingerprintimagetwo.bmp" );
 		remove( "./fingerprintimagethree.bmp" );
 	}else {
-		cout << "Two fingerprint not match! " << current_percent_one << " : " << current_percent_two << endl;
+		cout << "Two fingerprint not match! " << current_percent_one << "-" << countTwo
+			 << " : " << current_percent_two << "-" << countThree << endl;
 	}
 	
 

@@ -36,3 +36,8 @@ add_library(
     Synoapi
     synoapi.cpp
 )
+
+add_library(
+    MaskGabor
+    MaskGabor.cpp
+)

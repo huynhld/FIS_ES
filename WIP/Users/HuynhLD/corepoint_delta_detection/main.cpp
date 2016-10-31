@@ -8,11 +8,10 @@ const int IMAGE_HEIGHT = 288;
 const int IMAGE_WIDTH = 256;
 
 
-int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
+int I[IMAGE_WIDTH][IMAGE_HEIGHT]; // image
 
-double O[IMAGE_WIDTH][IMAGE_HEIGHT];
-// Todo
-double R[IMAGE_WIDTH][IMAGE_WIDTH];
+int O[IMAGE_WIDTH][IMAGE_HEIGHT];    // oriented image
+int R[IMAGE_WIDTH][IMAGE_HEIGHT];     // region mask image
 
 const int angleLimit = 5;
 const int distanceLimit = 25;
@@ -20,62 +19,56 @@ const int minuNumberLimit = 14;
 double image_mean = 50;
 double image_variance = 300;
 
+// Core Point
+double i_core = 0;
+double j_core = 0;
+
+// right delta point
+double i_delta_right = 300; 
+double j_delta_right = 300;
+
+// left delta point
+double i_delta_left = 300;
+double j_delta_left = 300;
+
 #define PI 3.1415926535897931
 
 using namespace cv;
 
-void normalize(int N){
-    int m,n;
-    m = IMAGE_HEIGHT;
-    n = IMAGE_WIDTH;
-
-    for(int i = 0; i< m; ++i){
-        for(int j = 0; j<n; ++j){
-            R[i][j] = 255;
-        }
-    }
-
-    for(int i = 0; i< m-N; i+= N){
-        for(int j = 0; j<n-N; j+=N){
-            
-            double mean = 0;
-            int count = 0;
-
-            for(int k = i; k<=i+N-1; ++k){
-                for(int h = j; h<=j+N-1; ++h){
-                    mean += ImageData[k][h];
-                    count ++;
-                }
+void normalization(int MEAN, int VARIANCE)
+{  
+    for (int i = 0; i<IMAGE_HEIGHT; i++){
+        for (int j = 0; j<IMAGE_WIDTH; j++){
+            double tempData = static_cast<double>(R[i][j]);
+            if (tempData>image_mean){
+               R[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
             }
-
-            mean /= count;
-
-        }
-    }
-
+            else{
+               R[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+            }
+       }
+   }
 }
 
-void orientation(int widthSqare)
+void orientation(Mat& im, int widthSqare)
 {
     int i, j, x, y;
     int Ax, Ay, Axy;
     int Gxx, Gyy, Gxy;
     int Bx, By;
-    double temp = 0;
-
-    for (j = 0; j < IMAGE_WIDTH; j++)
-    {
-        for (i = 0; i < IMAGE_HEIGHT; i++)
-        {
-            O[j][i] = 0;
-            temp += (ImageData[j][i] - image_mean)*(ImageData[j][i] - image_mean);
+    double temp = 0;    
+    for (i = 0; i <IMAGE_WIDTH ; i++){
+        for (j = 0; j < IMAGE_HEIGHT; j++){
+            O[i][j] = 0;
+            temp += (I[i][j] - image_mean)*(I[i][j] - image_mean);
         }
     }
+
     image_variance = temp / (IMAGE_WIDTH*IMAGE_HEIGHT);
-    //cout << image_variance << endl;       
-    for (x = widthSqare + 1; x < IMAGE_WIDTH - widthSqare - 1; x++)
+
+    for (x = widthSqare + 1; x <IMAGE_WIDTH - widthSqare - 1; x++)
     {
-        for (y = widthSqare + 1; y < IMAGE_HEIGHT - widthSqare - 1; y++)
+        for (y = widthSqare + 1; y <IMAGE_HEIGHT   - widthSqare - 1; y++)
         {
             Ax = 0; Ay = 0; Axy = 0;
             Gxx = 0; Gyy = 0; Gxy = 0;
@@ -85,8 +78,8 @@ void orientation(int widthSqare)
             {
                 for (j = y - widthSqare; j < y + widthSqare - 1; j++)
                 {
-                    Bx = ((ImageData[i + 2][j] + 2 * ImageData[i + 2][j + 1] + ImageData[i + 2][j + 2] - ImageData[i][j] - 2 * ImageData[i][j + 1] - ImageData[i][j + 2]));
-                    By = ((ImageData[i][j + 2] + 2 * ImageData[i + 1][j + 2] + ImageData[i + 2][j + 2] - ImageData[i][j] - 2 * ImageData[i + 1][j] - ImageData[i + 2][j]));
+                    Bx = ((I[i + 2][j] + 2 * I[i + 2][j + 1] + I[i + 2][j + 2] - I[i][j] - 2 * I[i][j + 1] - I[i][j + 2]));
+                    By = ((I[i][j + 2] + 2 * I[i + 1][j + 2] + I[i + 2][j + 2] - I[i][j] - 2 * I[i + 1][j] - I[i + 2][j]));
                     Ax += Bx*Bx;
                     Ay += By*By;
                     Axy += Bx*By;
@@ -99,56 +92,54 @@ void orientation(int widthSqare)
             O[x][y] = PI / 2 - 0.5*atan2(2 * Gxy, Gxx - Gyy);
         }
     }
-    //return O;
-    
+
+    int WindowSize = 10;
+    for (int i = 0; i <IMAGE_HEIGHT  -WindowSize; i+=WindowSize) {
+        for (int j = 0; j <IMAGE_WIDTH -WindowSize; j+=WindowSize) {
+            cv::Rect roi(i, j, WindowSize, WindowSize);
+
+            cv::Mat roiImage = im(roi);
+            //double direction = calculateDirectionForWindow(roiImage);
+
+            // TODO: Refactor direction drawing into own function
+            // direction = i % 360; // for testing
+            double xDir = std::cos((O[i][j] * 180 / PI)/180*M_PI);
+            double yDir = -1 * std::sin((O[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
+                                                             // in math, +y is typically
+                                                             // considered to go in the top
+                                                             // direction whereas in the image
+                                                             // it goes towards the bottom
+
+            cv::Point p1(
+                         WindowSize/2 + ((WindowSize/4)*xDir),
+                         WindowSize/2 + ((WindowSize/4)*yDir));
+            cv::Point p2(
+                         WindowSize/2 - ((WindowSize/4)*xDir),
+                         WindowSize/2 - ((WindowSize/4)*yDir));
+            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
+            cv::line(roiImage, p1, p2,  1);
+        }
+    }
+    imshow("Direction Field", im); waitKey(0);
 }
 
 void LoadImageData(cv::Mat im)
 {
     int temp_mean = 0;
-    //cout << im.channels() << " " << im.cols << endl;
-    for (int x = 0; x < im.cols; x++)
+
+    for (int x = 0; x < im.rows; x++)
     {
-        for (int y = 0; y < im.rows; y++)
+        for (int y = 0; y < im.cols; y++)
         {
+
             int temp = (int)im.at<uchar>(Point(x, y));
-            ImageData[x][y] = temp;
+            I[x][y] = temp;
+            R[x][y] = temp;
             temp_mean += temp;
         }
     }
-    //out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;
     image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
-    //cout << image_mean << endl;
-    orientation(4);
-    
-    // int WindowSize = 20;
-    // for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
-    //     for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
-    //         cv::Rect roi(i, j, WindowSize, WindowSize);
 
-    //         cv::Mat roiImage = im(roi);
-    //         //double direction = calculateDirectionForWindow(roiImage);
-
-    //         // TODO: Refactor direction drawing into own function
-    //         // direction = i % 360; // for testing
-    //         double xDir = std::cos((O[i][j] * 180 / PI)/180*M_PI);
-    //         double yDir = -1 * std::sin((O[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
-    //                                                          // in math, +y is typically
-    //                                                          // considered to go in the top
-    //                                                          // direction whereas in the image
-    //                                                          // it goes towards the bottom
-
-    //         cv::Point p1(
-    //                      WindowSize/2 + ((WindowSize/4)*xDir),
-    //                      WindowSize/2 + ((WindowSize/4)*yDir));
-    //         cv::Point p2(
-    //                      WindowSize/2 - ((WindowSize/4)*xDir),
-    //                      WindowSize/2 - ((WindowSize/4)*yDir));
-    //         //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
-    //         cv::line(roiImage, p1, p2,  1);
-    //     }
-    // }
-    // imshow("Direction Field", im); waitKey(0);
 }
 
 /*
@@ -269,9 +260,7 @@ void singularity(int N1, int N2)
     }
 
     // tim diem core
-    double core = 0.4;
-    double i_core = 0;
-    double j_core = 0;
+    double core = 0.4; 
     int c_core = 0;
 
     for(int i = (N1 + 1)/2 ; i<= m-(N1-1)/2 ; ++i){
@@ -325,9 +314,6 @@ void singularity(int N1, int N2)
         }
     }
 
-    double i_delta_right = 300; // 300 mean not existing.
-    double j_delta_right = 300;
-
     if( (i_delta !=0) and (j_delta != 0) ){
         i_delta_right = i_delta - i_core;
         j_delta_right = j_delta - j_core;
@@ -360,9 +346,6 @@ void singularity(int N1, int N2)
         }
     }
 
-    double i_delta_left = 300; // 300 mean not existing.
-    double j_delta_left = 300;
-
     if( (i_delta !=0) and (j_delta != 0) ){
         i_delta_left = i_delta - i_core;
         j_delta_left = j_delta - j_core;
@@ -372,6 +355,21 @@ void singularity(int N1, int N2)
 
 int main()
 {
-    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/img_l_1_2");
+    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/img_l_4.png");
+      
     LoadImageData(img);
+    orientation(img, 4); 
+    /*
+    normalization(image_mean, image_variance); 
+
+    singularity(45, 25);
+
+    std::cout<<"Core point " << i_core << ", " << j_core << std::endl;
+    std::cout<<"Delta point left " << i_delta_left << ", " << j_delta_left << std::endl;
+    std::cout<<"Delta point right " << i_delta_right << ", " << j_delta_right << std::endl;
+    
+     circle(img, Point(i_core, i_core), 20, Scalar(0, 255, 0), 1);
+    circle(img, Point(i_core, j_core), 10, Scalar(0, 255, 0), 1);
+    imshow("corepoint_delta_detection", img); waitKey(0);
+    */
 }

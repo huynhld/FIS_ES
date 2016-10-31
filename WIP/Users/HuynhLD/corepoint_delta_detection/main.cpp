@@ -10,12 +10,9 @@ const int IMAGE_WIDTH = 256;
 
 int I[IMAGE_WIDTH][IMAGE_HEIGHT]; // image
 
-int O[IMAGE_WIDTH][IMAGE_HEIGHT];    // oriented image
+double O[IMAGE_WIDTH][IMAGE_HEIGHT];    // oriented image
 int R[IMAGE_WIDTH][IMAGE_HEIGHT];     // region mask image
 
-const int angleLimit = 5;
-const int distanceLimit = 25;
-const int minuNumberLimit = 14; 
 double image_mean = 50;
 double image_variance = 300;
 
@@ -37,8 +34,8 @@ using namespace cv;
 
 void normalization(int MEAN, int VARIANCE)
 {  
-    for (int i = 0; i<IMAGE_HEIGHT; i++){
-        for (int j = 0; j<IMAGE_WIDTH; j++){
+    for (int i = 0; i<IMAGE_WIDTH; i++){
+        for (int j = 0; j<IMAGE_HEIGHT; j++){
             double tempData = static_cast<double>(R[i][j]);
             if (tempData>image_mean){
                R[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
@@ -46,6 +43,7 @@ void normalization(int MEAN, int VARIANCE)
             else{
                R[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
             }
+            if(R[i][j] < 0)  R[i][j] = 0 ;
        }
    }
 }
@@ -92,10 +90,11 @@ void orientation(Mat& im, int widthSqare)
             O[x][y] = PI / 2 - 0.5*atan2(2 * Gxy, Gxx - Gyy);
         }
     }
-
-    int WindowSize = 10;
-    for (int i = 0; i <IMAGE_HEIGHT  -WindowSize; i+=WindowSize) {
-        for (int j = 0; j <IMAGE_WIDTH -WindowSize; j+=WindowSize) {
+    std::cout<<"image_mean " << image_mean << std::endl;
+    std::cout<<"image_variance " << image_variance << std::endl;
+    int WindowSize = 26;
+    for (int i = 0; i <IMAGE_WIDTH  -WindowSize; i+=WindowSize) {
+        for (int j = 0; j <IMAGE_HEIGHT -WindowSize; j+=WindowSize) {
             cv::Rect roi(i, j, WindowSize, WindowSize);
 
             cv::Mat roiImage = im(roi);
@@ -127,9 +126,9 @@ void LoadImageData(cv::Mat im)
 {
     int temp_mean = 0;
 
-    for (int x = 0; x < im.rows; x++)
+    for (int x = 0; x < im.cols; x++)
     {
-        for (int y = 0; y < im.cols; y++)
+        for (int y = 0; y < im.rows; y++)
         {
 
             int temp = (int)im.at<uchar>(Point(x, y));
@@ -148,7 +147,7 @@ void LoadImageData(cv::Mat im)
     N(le): kich thuoc "duong cong so"(curve) xem xet
 */
 
-double pointcare( int N, int i, int j)
+int pointcare( int N, int i, int j)
 {
     int a = (N-1)/2;
     double d = 0.0;
@@ -205,7 +204,7 @@ double pointcare( int N, int i, int j)
         d0 = O[h][j-a];
 
     }
-    double P = round(d*180/PI);
+    int P = round(d*180/PI);
     return P;
 }
 
@@ -221,8 +220,8 @@ double pointcare( int N, int i, int j)
 */
 void singularity(int N1, int N2)
 {
-    int m = IMAGE_HEIGHT;
-    int n = IMAGE_WIDTH;
+    int n = IMAGE_HEIGHT;
+    int m = IMAGE_WIDTH;
 
     double S1[m][n], S2[m][n];
 
@@ -235,10 +234,11 @@ void singularity(int N1, int N2)
 
     // Tim tat ca cac diem singularity ( co the co dien loi )
 
-    for(int i = N1+1; i<=m-N1; ++i){
-        for(int j = N1+1; j<=n-N1; ++j){
+    for(int i = N1+1; i<m-N1; ++i){
+        for(int j = N1+1; j<n-N1; ++j){
             if( ( R[i-N1][j] == 0 ) and ( R[i+N1][j] == 0) and ( R[i][j-N1] == 0) and ( R[i][j+N1] == 0) ){
-                double P = pointcare(N1, i, j);
+                int P = pointcare(N1, i, j);
+
                 if( (P == 360) or (P == 180) ){
                     // Whorl or loop
                     S1[i][j] = 1;
@@ -246,11 +246,10 @@ void singularity(int N1, int N2)
             }
         }
     }
-
-    for(int i = N2+1; i<=m-N2; ++i){
-        for(int j = N2+1; j<=n-N2; ++j){
+    for(int i = N2+1; i<m-N2; ++i){
+        for(int j = N2+1; j<n-N2; ++j){
             if( ( R[i-N2][j] == 0 ) and ( R[i+N2][j] == 0) and ( R[i][j-N2] == 0) and ( R[i][j+N2] == 0) ){
-                double P = pointcare(N2, i, j);
+                int P = pointcare(N2, i, j);
                 if( P == -180 ){
                     // Delta
                     S2[i][j] = 1;
@@ -263,53 +262,60 @@ void singularity(int N1, int N2)
     double core = 0.4; 
     int c_core = 0;
 
-    for(int i = (N1 + 1)/2 ; i<= m-(N1-1)/2 ; ++i){
-        for(int j = (N1 + 1)/2 ; j<= n-(N1-1)/2 ; ++j){
-            double mean = 0;
+    for(int i = (N1 + 1)/2 ; i< m-(N1-1)/2 ; ++i){
+        for(int j = (N1 + 1)/2 ; j< n-(N1-1)/2 ; ++j){
+            double mean = 0.0;
             int count = 0;
             
-            for(int k = i-(N1-1)/2; k <= i+(N1-1)/2; ++k){
-                for(int h = j-(N1-1)/2; h<= j+(N1-1)/2; ++h){
+            for(int k = i-(N1-1)/2; k < i+(N1-1)/2; ++k){
+                for(int h = j-(N1-1)/2; h< j+(N1-1)/2; ++h){
                     mean += S1[k][h];
                     count += 1;
                 }
             }
+            if(count > 0){
+                mean = mean / count;
+                if(mean >= core){
+                    i_core += i;
+                    j_core += j;
+                    c_core += 1;
+                }
 
-            mean = mean / count;
-
-            if(mean >= core){
-                i_core += i;
-                j_core += j;
-                c_core += 1;
             }
         }
     }
 
-    i_core = round(i_core / c_core);
-    j_core = round(j_core / c_core);
-
+    // check core not exist
+    if(c_core > 0) {
+        i_core = round(i_core / c_core);
+        j_core = round(j_core / c_core);    
+    }
+    
     // Tim diem delta ben phai (neu co)
     double delta = 0.5;
     double i_delta = 0;
     double j_delta = 0;
 
-    for(int i = i_core + (N2 +1)/2 ;i <=m-(N2-1)/2; ++i){
-        for(int j = j_core + (N2 +1)/2 ;j <=n-(N2-1)/2; ++j){
+    for(int i = i_core + (N2 +1)/2 ;i <m-(N2-1)/2; ++i){
+        for(int j = j_core + (N2 +1)/2 ;j <n-(N2-1)/2; ++j){
             double mean = 0;
             int count = 0;
 
-            for(int k = i-(N2-1)/2; k <= i+(N2-1)/2; ++k){
-                for(int h = j-(N2-1)/2; h<= j+(N2-1)/2; ++h){
+            for(int k = i-(N2-1)/2; k <i+(N2-1)/2; ++k){
+                for(int h = j-(N2-1)/2; h< j+(N2-1)/2; ++h){
                     mean += S2[k][h];
                     count += 1;
                 }
             }
 
-            mean = mean / count;
+            if(count > 0){
+                mean = mean / count;
+                if(mean > delta){
+                    delta = mean;
+                    i_delta = i;
+                    j_delta = j;
+                }
 
-            if(mean > delta){
-                i_delta = i;
-                j_delta = j;
             }
         }
     }
@@ -325,23 +331,26 @@ void singularity(int N1, int N2)
     i_delta = 0;
     j_delta = 0;
 
-    for(int i = i_core + (N2 +1)/2 ;i <=m-(N2-1)/2; ++i){
-        for(int j = (N2 +1)/2 ;j <=j_core-(N2-1)/2; ++j){
+    for(int i = i_core + (N2 +1)/2 ;i < m-(N2-1)/2; ++i){
+        for(int j = (N2 +1)/2 ;j < j_core-(N2-1)/2; ++j){
             double mean = 0;
             int count = 0;
 
-            for(int k = i-(N2-1)/2; k <= i+(N2-1)/2; ++k){
-                for(int h = j-(N2-1)/2; h<= j+(N2-1)/2; ++h){
+            for(int k = i-(N2-1)/2; k < i+(N2-1)/2; ++k){
+                for(int h = j-(N2-1)/2; h< j+(N2-1)/2; ++h){
                     mean += S2[k][h];
                     count += 1;
                 }
             }
 
-            mean = mean / count;
+            if(count > 0){
+                mean = mean / count;
 
-            if(mean > delta){
-                i_delta = i;
-                j_delta = j;
+                if(mean > delta){
+                    delta = mean;
+                    i_delta = i;
+                    j_delta = j;
+                }    
             }
         }
     }
@@ -355,14 +364,15 @@ void singularity(int N1, int N2)
 
 int main()
 {
-    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/img_l_4.png");
+    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/Untitled.png", 0);
       
     LoadImageData(img);
     orientation(img, 4); 
-    /*
-    normalization(image_mean, image_variance); 
 
+    normalization(50, 300); 
+    std::cout << "logs1" << std::endl;
     singularity(45, 25);
+    std::cout << "loge1" << std::endl;
 
     std::cout<<"Core point " << i_core << ", " << j_core << std::endl;
     std::cout<<"Delta point left " << i_delta_left << ", " << j_delta_left << std::endl;
@@ -371,5 +381,5 @@ int main()
      circle(img, Point(i_core, i_core), 20, Scalar(0, 255, 0), 1);
     circle(img, Point(i_core, j_core), 10, Scalar(0, 255, 0), 1);
     imshow("corepoint_delta_detection", img); waitKey(0);
-    */
+ 
 }

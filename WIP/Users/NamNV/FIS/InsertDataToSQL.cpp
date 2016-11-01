@@ -91,7 +91,7 @@ void LoadImageData(Mat im)
 			int temp = (int)im.at<uchar>(Point(x, y));
 			ImageData[x][y] = temp;
 			temp_mean += temp;
-			ImageData[x][y] = temp;
+			//ImageData[x][y] = temp;
 		}
 	}
 	//out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;

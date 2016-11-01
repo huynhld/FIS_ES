@@ -8,36 +8,16 @@ add_library(
 )
 
 add_library(
-    BinarisationAlgorithms
+    ImageProcessing
     AdaptiveLocalThreshold.cpp
-)
-
-add_library(
-    ThinningAlgorithms
     GuoHall.cpp
-)
-
-add_library(
-    OptimisationAlgorithms
     Ideka.cpp
-)
-
-add_library(
-    SQL
-    SQL.cpp
-)
-
-add_library(
-    Functions
+    MaskGabor.cpp
     Functions.cpp
 )
 
 add_library(
-    Synoapi
+    Others
+    SQL.cpp
     synoapi.cpp
-)
-
-add_library(
-    MaskGabor
-    MaskGabor.cpp
 )

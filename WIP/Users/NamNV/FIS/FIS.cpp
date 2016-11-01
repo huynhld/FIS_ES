@@ -98,34 +98,34 @@ void LoadImageData(Mat im)
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
 	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
-	// int WindowSize = 9;
-	// for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
- //        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
- //            cv::Rect roi(i, j, WindowSize, WindowSize);
+	int WindowSize = 9;
+	for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
+        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
+            cv::Rect roi(i, j, WindowSize, WindowSize);
 
- //            cv::Mat roiImage = im(roi);
- //            //double direction = calculateDirectionForWindow(roiImage);
+            cv::Mat roiImage = im(roi);
+            //double direction = calculateDirectionForWindow(roiImage);
 
- //            // TODO: Refactor direction drawing into own function
- //            // direction = i % 360; // for testing
- //            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
- //            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
- //                                                             // in math, +y is typically
- //                                                             // considered to go in the top
- //                                                             // direction whereas in the image
- //                                                             // it goes towards the bottom
+            // TODO: Refactor direction drawing into own function
+            // direction = i % 360; // for testing
+            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
+            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
+                                                             // in math, +y is typically
+                                                             // considered to go in the top
+                                                             // direction whereas in the image
+                                                             // it goes towards the bottom
 
- //            cv::Point p1(
- //                         WindowSize/2 + ((WindowSize/4)*xDir),
- //                         WindowSize/2 + ((WindowSize/4)*yDir));
- //            cv::Point p2(
- //                         WindowSize/2 - ((WindowSize/4)*xDir),
- //                         WindowSize/2 - ((WindowSize/4)*yDir));
- //            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
- //            cv::line(roiImage, p1, p2,  1);
- //        }
- //    }
- //    imshow("Direction Field", im); waitKey(0);
+            cv::Point p1(
+                         WindowSize/2 + ((WindowSize/4)*xDir),
+                         WindowSize/2 + ((WindowSize/4)*yDir));
+            cv::Point p2(
+                         WindowSize/2 - ((WindowSize/4)*xDir),
+                         WindowSize/2 - ((WindowSize/4)*yDir));
+            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
+            cv::line(roiImage, p1, p2,  1);
+        }
+    }
+    imshow("Direction Field", im); waitKey(0);
 }
 
 
@@ -453,7 +453,7 @@ int main(int argc, const char** argv)
 			// }
 		// }
   //   }
-	if (percent < 0.30)
+	if (percent < 0.35)
 		cout << "Welcome : " << finger_id_exist << " : " << max_count << endl;
 	else
 	{

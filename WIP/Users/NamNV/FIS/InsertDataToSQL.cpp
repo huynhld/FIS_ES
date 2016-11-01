@@ -21,7 +21,7 @@ using namespace std;
 
 
 int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
-int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
+//int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 const int maskNumber = 32;
 const int angleLimit = 90;
@@ -91,7 +91,7 @@ void LoadImageData(Mat im)
 			int temp = (int)im.at<uchar>(Point(x, y));
 			ImageData[x][y] = temp;
 			temp_mean += temp;
-			SouceImageData[x][y] = temp;
+			ImageData[x][y] = temp;
 		}
 	}
 	//out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;
@@ -194,7 +194,7 @@ void ToFiltring(Mat& img, int widthSquare,int f,int fi)
 			{
 				for(int j=0;j<2*widthSquare+1;j++)
 				{
-					pointValue += mask[i][j]*SouceImageData[i+x][j+y];
+					pointValue += mask[i][j]*ImageData[i+x][j+y];
 				}
 			}
 				
@@ -202,8 +202,8 @@ void ToFiltring(Mat& img, int widthSquare,int f,int fi)
 				pointValue = 0;
 			if(pointValue>255)
 				pointValue = 255;
-			SouceImageData[x][y] = static_cast<int>(pointValue);
-			img.at<uchar>((Point(x, y))) = SouceImageData[x][y];
+			ImageData[x][y] = static_cast<int>(pointValue);
+			img.at<uchar>((Point(x, y))) = ImageData[x][y];
 		}
 	}
 }
@@ -215,16 +215,16 @@ void normalization(Mat& img, int MEAN, int VARIANCE)
 	{
 		for (int j = 0; j<IMAGE_HEIGHT; j++)
 		{
-			double tempData = static_cast<double>(SouceImageData[i][j]);
+			double tempData = static_cast<double>(ImageData[i][j]);
 			if (tempData>image_mean)
 			{
-				SouceImageData[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+				ImageData[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
 			}
 			else
 			{
-				SouceImageData[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+				ImageData[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
 			}
-			img.at<uchar>((Point(i, j))) = (uchar) SouceImageData[i][j];
+			img.at<uchar>((Point(i, j))) = (uchar) ImageData[i][j];
 
 		}
 	}
@@ -242,7 +242,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 		return -1;
 	}
 	memset(ImageData, 0, sizeof(ImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
-	//memset(SouceImageData, 0, sizeof(SouceImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
+	//memset(ImageData, 0, sizeof(ImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
 	memset(directMatrix, 0, sizeof(directMatrix[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
 	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();

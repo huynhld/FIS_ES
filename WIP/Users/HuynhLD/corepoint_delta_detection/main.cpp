@@ -10,7 +10,7 @@ const int IMAGE_WIDTH = 256;
 
 int I[IMAGE_WIDTH][IMAGE_HEIGHT]; // image
 
-double O[IMAGE_WIDTH][IMAGE_HEIGHT];    // oriented image
+int O[IMAGE_WIDTH][IMAGE_HEIGHT];    // oriented image
 int R[IMAGE_WIDTH][IMAGE_HEIGHT];     // region mask image
 
 double image_mean = 50;
@@ -92,7 +92,7 @@ void orientation(Mat& im, int widthSqare)
     }
     std::cout<<"image_mean " << image_mean << std::endl;
     std::cout<<"image_variance " << image_variance << std::endl;
-    int WindowSize = 26;
+    int WindowSize = 4;
     for (int i = 0; i <IMAGE_WIDTH  -WindowSize; i+=WindowSize) {
         for (int j = 0; j <IMAGE_HEIGHT -WindowSize; j+=WindowSize) {
             cv::Rect roi(i, j, WindowSize, WindowSize);
@@ -220,8 +220,9 @@ int pointcare( int N, int i, int j)
 */
 void singularity(int N1, int N2)
 {
-    int n = IMAGE_HEIGHT;
     int m = IMAGE_WIDTH;
+    int n = IMAGE_HEIGHT;
+    
 
     double S1[m][n], S2[m][n];
 
@@ -236,25 +237,26 @@ void singularity(int N1, int N2)
 
     for(int i = N1+1; i<m-N1; ++i){
         for(int j = N1+1; j<n-N1; ++j){
-            if( ( R[i-N1][j] == 0 ) and ( R[i+N1][j] == 0) and ( R[i][j-N1] == 0) and ( R[i][j+N1] == 0) ){
+            //if( ( R[i-N1][j] == 0 ) and ( R[i+N1][j] == 0) and ( R[i][j-N1] == 0) and ( R[i][j+N1] == 0) ){
                 int P = pointcare(N1, i, j);
-
+                //std::cout<< "pointcare " << P << std::endl;
                 if( (P == 360) or (P == 180) ){
                     // Whorl or loop
                     S1[i][j] = 1;
                 }
-            }
+            //}
         }
     }
     for(int i = N2+1; i<m-N2; ++i){
         for(int j = N2+1; j<n-N2; ++j){
-            if( ( R[i-N2][j] == 0 ) and ( R[i+N2][j] == 0) and ( R[i][j-N2] == 0) and ( R[i][j+N2] == 0) ){
+            //if( ( R[i-N2][j] == 0 ) and ( R[i+N2][j] == 0) and ( R[i][j-N2] == 0) and ( R[i][j+N2] == 0) ){
                 int P = pointcare(N2, i, j);
+                //std::cout<< "pointcare " << P << std::endl;
                 if( P == -180 ){
                     // Delta
                     S2[i][j] = 1;
                 }
-            }
+            //}
         }
     }
 
@@ -364,21 +366,21 @@ void singularity(int N1, int N2)
 
 int main()
 {
-    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/Untitled.png", 0);
+    Mat img = imread("/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/namte2.bmp", 0);
       
     LoadImageData(img);
-    orientation(img, 4); 
+    orientation(img, 8); 
 
     normalization(50, 300); 
     std::cout << "logs1" << std::endl;
-    singularity(45, 25);
+    singularity(9, 5);
     std::cout << "loge1" << std::endl;
 
     std::cout<<"Core point " << i_core << ", " << j_core << std::endl;
     std::cout<<"Delta point left " << i_delta_left << ", " << j_delta_left << std::endl;
     std::cout<<"Delta point right " << i_delta_right << ", " << j_delta_right << std::endl;
     
-     circle(img, Point(i_core, i_core), 20, Scalar(0, 255, 0), 1);
+     circle(img, Point(i_core, j_core), 5, Scalar(0, 255, 0), 1);
     circle(img, Point(i_core, j_core), 10, Scalar(0, 255, 0), 1);
     imshow("corepoint_delta_detection", img); waitKey(0);
  

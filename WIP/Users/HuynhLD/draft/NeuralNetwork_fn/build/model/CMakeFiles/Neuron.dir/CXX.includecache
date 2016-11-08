@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/header/Neuron.h
+vector
+-
+iostream
+-
+cstdlib
+-
+cassert
+-
+cmath
+-
+fstream
+-
+sstream
+-
+
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/model/Neuron.cpp
+../header/Neuron.h
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/header/Neuron.h
+

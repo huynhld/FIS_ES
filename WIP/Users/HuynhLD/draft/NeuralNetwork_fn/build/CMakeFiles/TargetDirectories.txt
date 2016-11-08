@@ -1,0 +1,8 @@
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/CMakeFiles/edit_cache.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/CMakeFiles/rebuild_cache.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/CMakeFiles/exec.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/model/CMakeFiles/edit_cache.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/model/CMakeFiles/TrainningData.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/model/CMakeFiles/Neuron.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/model/CMakeFiles/Net.dir
+/home/huynhld/FIS_ES/WIP/Users/HuynhLD/NeuralNetwork_fn/build/model/CMakeFiles/rebuild_cache.dir

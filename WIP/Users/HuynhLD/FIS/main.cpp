@@ -25,12 +25,12 @@ double i_core = 0;
 double j_core = 0;
 
 // right delta point
-double i_delta_right = 300; 
-double j_delta_right = 300;
+double i_delta_right = IMAGE_WIDTH; 
+double j_delta_right = IMAGE_HEIGHT;
 
 // left delta point
-double i_delta_left = -300;
-double j_delta_left = -300;
+double i_delta_left = -IMAGE_WIDTH;
+double j_delta_left = -IMAGE_HEIGHT;
 
 #define PI 3.1415926535897931
 
@@ -479,8 +479,8 @@ void output(std::string img_path, std::string path){
 
 int main()
 {
-    std::string img_path = "/home/huynhld/Desktop/FIS_ES/WIP/Users/HuynhLD/FIS/img/101_";
-    std::string path = "//home/huynhld/Desktop/FIS_ES/WIP/Users/HuynhLD/FIS/img/tranning/t1";
+    std::string img_path = "/home/huynhld/FIS_ES/WIP/Users/HuynhLD/FIS/img/101_";
+    std::string path = "/home/huynhld/FIS_ES/WIP/Users/HuynhLD/FIS/tranning/t1";
     
     std::ofstream file(path, std::ios::app); //open in constructor
     file << "topology: 16 4 1";
@@ -492,6 +492,7 @@ int main()
         img_path_full.append(img_path) ;
         img_path_full.append(std::to_string(i)) ;
         img_path_full.append(".tif") ;
+        std::cout << img_path_full << std::endl;
         output(img_path_full , path);
     }
     

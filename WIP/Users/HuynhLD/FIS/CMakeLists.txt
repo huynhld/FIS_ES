@@ -10,7 +10,19 @@ file(COPY ${MY_DATABASE_FILE} DESTINATION ${CMAKE_BINARY_DIR})
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory(src)
 
-add_executable(exec main.cpp)
+include_directories ("${PROJECT_SOURCE_DIR}/model")
+add_subdirectory(model)
+
+
+add_executable(np np.cpp)
+add_executable(main main.cpp)
 add_executable(InsertData InsertDataToSQL.cpp)
-target_link_libraries( exec ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ThinningAlgorithms BinarisationAlgorithms Functions OptimisationAlgorithms SQL sqlite3 Synoapi )
+
+target_link_libraries( main ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ThinningAlgorithms BinarisationAlgorithms Functions OptimisationAlgorithms SQL sqlite3 Synoapi )
 target_link_libraries( InsertData ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ThinningAlgorithms BinarisationAlgorithms Functions OptimisationAlgorithms SQL sqlite3 Synoapi )
+target_link_libraries( np TrainningData Net Neuron)
+
+
+
+
+

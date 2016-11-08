@@ -3,11 +3,11 @@
 
 #define PI 3.1415926535897931
 
-const int IMAGE_HEIGHT = 288;
-const int IMAGE_WIDTH = 256;
+const int IMAGE_HEIGHT = 388;
+const int IMAGE_WIDTH = 374;
 
-const int IMAGE_ROWS = 288;
-const int IMAGE_COLUMNS = 256;
+const int IMAGE_ROWS = 388;
+const int IMAGE_COLUMNS = 374;
 
 class Minutiae
 {

@@ -31,6 +31,7 @@ const int f = 7;
 const int fi = 3; 
 double image_mean = 100;
 double image_variance = 100;
+int locX = 0, locY = 0;
 
 void GetDirectionMatrix(int widthSqare)
 {
@@ -230,6 +231,16 @@ void normalization(Mat& img, int MEAN, int VARIANCE)
 	}
 }
 
+void change_loc(std::vector<Minutiae>& minutiae, int _locX, int _locY)
+{
+	for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
+		//cout << "Before" << minutiae[i].getLocX() << endl;
+		minutiae[i].setLocX(minutiae[i].getLocX() - _locX);
+		minutiae[i].setLocY(minutiae[i].getLocY() - _locY);
+		//cout << "AFter" << minutiae[i].getLocX() << " " <<   minutiae[i].getLocY()<< endl;
+	}
+}
+
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
 	// First argv is always the binary being executed
@@ -247,13 +258,13 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
-	normalization(img, 50, 300);
-	//imshow("After", img); waitKey(0);
+	normalization(img, 30, 100);
+	imshow("After", img); waitKey(0);
 	ToFiltring(img, 4,f,fi);
-	//imshow("After ToFiltring", img); waitKey(0);
+	imshow("After ToFiltring", img); waitKey(0);
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	//imshow("After", img); waitKey(0);
-	localThreshold::binarisation(img, 26, 29);
+	localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
 	//binarisation(img);
 	//imshow("After binarisation", img); waitKey(0);
 	cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
@@ -265,13 +276,13 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	cv::bitwise_not(img, img);    //Inverse for bit-operations
 	GuoHall::thinning(img);
 	cv::bitwise_not(img, img);
-	//imshow("After thinning", img); waitKey(0);
+	imshow("After thinning", img); waitKey(0);
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
 	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
 
 	//Minutiae-filtering
-	Filter::filterMinutiae(minutiae);
+	Filter::filterMinutiae(minutiae, locX, locY);
 	std::cout << "After filter: " << minutiae.size() << std::endl;
 
 
@@ -296,9 +307,10 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     }
     //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
     imshow( "After get", minutImg2 );   waitKey(0);                //
+    // imwrite("testimage.bmp",minutImg2);
+    change_loc(minutiae, locX, locY);
 	return 0;
 }
-
 
 
 
@@ -309,6 +321,7 @@ void show_vector(vector<Minutiae> v) {
 	}
 	std::cout << "==============End Vector=========================" << std::endl;
 }
+
 
 int main(int argc, const char** argv)
 {
@@ -413,20 +426,20 @@ int main(int argc, const char** argv)
 							minutiaeTwo, angleSet, deltaXSet,
 							deltaYSet, anglesCount, deltaXCount,
 							deltaYCount, angleLimit * PI / 180,
-							IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+							0, 0);
 
 	Minutiae minuResultThree = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeTwo ,
 							minutiaeThree, angleSet, deltaXSet,
 							deltaYSet, anglesCount, deltaXCount,
 							deltaYCount, angleLimit * PI / 180,
-							IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+							0, 0);
 
 	int countTwo = Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
 					minuResult, distanceLimit, angleLimit * PI / 180);
 	int countThree = Functions::CountMinuMatching(minutiaeTwo , minutiaeThree,
 					minuResultThree, distanceLimit, angleLimit * PI / 180);
-	float current_percent_one = static_cast<float>(minutiaeOne.size() - countTwo)/minutiaeOne.size();
-	float current_percent_two = static_cast<float>(minutiaeTwo.size() - countThree)/minutiaeTwo.size();
+	float current_percent_one = static_cast<float>((minutiaeOne.size() < minutiaeTwo.size() ? minutiaeOne.size() : minutiaeTwo.size())  - countTwo)/minutiaeOne.size();
+	float current_percent_two = static_cast<float>((minutiaeTwo.size() < minutiaeThree.size() ? minutiaeTwo.size() : minutiaeThree.size()) - countThree)/minutiaeTwo.size();
 	if(current_percent_one < 0.60 && current_percent_two < 0.60) {
 		SQL sql;
 		sql.create_table();

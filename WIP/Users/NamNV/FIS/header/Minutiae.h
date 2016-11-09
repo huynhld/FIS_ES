@@ -21,6 +21,8 @@ class Minutiae
         virtual ~Minutiae();
         int getLocX();
         int getLocY();
+        void setLocX(int _locX);
+        void setLocY(int _locY);
         double getDirect();
         Type getType();
         void setMarkTrue();

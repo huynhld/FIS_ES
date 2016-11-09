@@ -24,6 +24,17 @@ void Minutiae::setDirect(double _direct)
 	direct = _direct;
 }
 
+void Minutiae::setLocX(int _locX)
+{
+    this->locX = _locX;
+}
+
+void Minutiae::setLocY(int _locY)
+{
+    this->locY = _locY;
+}
+
+
 Minutiae::Minutiae()
 {
 

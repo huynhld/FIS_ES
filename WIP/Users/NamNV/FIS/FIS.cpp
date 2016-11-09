@@ -31,6 +31,7 @@ const int f = 7;
 const int fi = 3; 
 double image_mean = 100;
 double image_variance = 100;
+int locX = 0, locY = 0;
 
 void GetDirectionMatrix(int widthSqare)
 {
@@ -230,6 +231,16 @@ void normalization(Mat& img, int MEAN, int VARIANCE)
 	}
 }
 
+void change_loc(std::vector<Minutiae>& minutiae, int _locX, int _locY)
+{
+	for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
+		//cout << "Before" << minutiae[i].getLocX() << endl;
+		minutiae[i].setLocX(minutiae[i].getLocX() - _locX);
+		minutiae[i].setLocY(minutiae[i].getLocY() - _locY);
+		//cout << "AFter" << minutiae[i].getLocX() << " " <<   minutiae[i].getLocY()<< endl;
+	}
+}
+
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
 	// First argv is always the binary being executed
@@ -247,13 +258,13 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
-	normalization(img, 50, 300);
+	normalization(img, 30, 100);
 	imshow("After", img); waitKey(0);
 	ToFiltring(img, 4,f,fi);
 	imshow("After ToFiltring", img); waitKey(0);
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	//imshow("After", img); waitKey(0);
-	localThreshold::binarisation(img, 26, 29);
+	localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
 	//binarisation(img);
 	//imshow("After binarisation", img); waitKey(0);
 	cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
@@ -271,7 +282,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
 
 	//Minutiae-filtering
-	Filter::filterMinutiae(minutiae);
+	Filter::filterMinutiae(minutiae, locX, locY);
 	std::cout << "After filter: " << minutiae.size() << std::endl;
 
 
@@ -296,7 +307,8 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     }
     //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
     imshow( "After get", minutImg2 );   waitKey(0);                //
-    imwrite("testimage.bmp",minutImg2);
+    // imwrite("testimage.bmp",minutImg2);
+    change_loc(minutiae, locX, locY);
 	return 0;
 }
 
@@ -423,12 +435,12 @@ int main(int argc, const char** argv)
 				v, angleSet, deltaXSet,
 				deltaYSet, anglesCount, deltaXCount,
 				deltaYCount, angleLimit * PI / 180,
-				IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+				0, 0);
 			int count = Functions::CountMinuMatching(minutiaeOne , v,
 				minuResult, distanceLimit, angleLimit * PI / 180);
-			float current_percent = static_cast<float>(minutiaeOne.size() - count)/minutiaeOne.size();
+			float current_percent = static_cast<float>((minutiaeOne.size() < v.size() ? minutiaeOne.size() : v.size()) - count)/minutiaeOne.size();
 			cout << "Percent: " << current_percent << " + id: " << static_cast<std::string>(iterator->first) << " Count: " << count << endl;
-			if(current_percent < 0.30 && current_percent < percent) {
+			if(current_percent < 0.35 && current_percent < percent) {
 				std::string key = static_cast<std::string>(iterator->first);
 				std::istringstream is(key);
 				is >> finger_id_exist;

@@ -6,7 +6,7 @@
 
 namespace Filter {
 
-    void filterMinutiae(std::vector<Minutiae>& minutiae);
+    void filterMinutiae(std::vector<Minutiae>& minutiae, int &locX, int &locY);
 
     double euclideanDistance(int x1, int y1, int x2, int y2);
 

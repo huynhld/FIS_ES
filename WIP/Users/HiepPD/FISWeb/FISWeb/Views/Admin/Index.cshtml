@@ -1,0 +1,89 @@
+﻿@model FISWeb.Models.AdminViewModels
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="content">
+    <div class="monthly-grid">
+        <div class="panel panel-widget">
+            <div class="panel-title">Monthly Status Report</div>
+            <div>
+                <div class="contain">
+                    <div class="gantt">
+                        <table border="1">
+                            <tr>
+                                <th rowspan="2" class="tbcell">
+                                    Employee
+                                </th>
+                                <th colspan=@Model.numDays  class="tbcell">
+                                    November
+                                </th>
+                            </tr>
+
+                            <tr>
+                                @for (int i = 0; i < Model.numDays; i++)
+                                {
+                                    <th  class="tbcell">@(i + 1)</th>
+                                }
+                            </tr>
+
+                            @for (int i = 0; i < Model.empListName.Count; i++)
+                            {
+                                <tr>
+                                    <td class="tbcell">
+                                        <span>@Model.empListName[i]</span>
+                                    </td>
+                                    @for (int j = 1; j < Model.numDays + 1; j++)
+                                    {
+                                        <td>
+                                            @if (@Model.monthAttend[i][j] == true)
+                                            {
+                                                 <span>v</span>
+                                            }
+                                            else
+                                            {
+                                                <span></span>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content-top">
+        <div class="col-md-6 content-top-lft">
+            <div class="panel panel-widget">
+                <div class="panel-title">Device status</div>
+                <div>
+                    @foreach (var item in Model.listDevice)
+                    {
+                        if (item.device_status == 1)
+                        {
+                            <p>@item.device_name is <a href="@Url.Action("activeDevice", "Admin", new {@item_id = item.device_id})">Active</a></p>
+                        }
+                        else
+                        {
+                            <p>@item.device_name is <a href="@Url.Action("activeDevice", "Admin", new {@item_id = item.device_id})">Deactive</a></p>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 content-top-2">
+            <div class="panel panel-widget">
+                <div class="panel-title">Log Attend</div>
+                <div>
+                    @foreach (var item in Model.listAttent)
+                    {
+                        <p><a href="@Url.Action("Profile", "Users", new {@userID = item.user_id})">@item.fullname</a> attend at "@item.location" at @item.log_time</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+﻿@model FISWeb.Models.Profile
+@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Content/profile-style.css" rel="stylesheet" />
+<link href="~/Content/owl.carousel.css" rel="stylesheet" />
+<div id="home" class="header">
+    <div class="container">
+        <div class="banner-info">
+            <div class="col-md-7 header-right">
+                <h1>Hi !</h1>
+                <h6>@Model.position</h6>
+                <ul class="address">
+
+                    <li>
+                        <ul class="address-text">
+                            <li><b>NAME</b></li>
+                            <li>@Model.name</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <ul class="address-text">
+                            <li><b>D.O.B</b></li>
+                            <li>@Model.DOB</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <ul class="address-text">
+                            <li><b>PHONE </b></li>
+                            <li>@Model.phone</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <ul class="address-text">
+                            <li><b>DEPARTMENT </b></li>
+                            <li>@Model.department</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <ul class="address-text">
+                            <li><b>ADDRESS </b></li>
+                            <li>@Model.address</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <ul class="address-text">
+                            <li><b>E-MAIL </b></li>
+                            <li><a href="mailto:example@mail.com">@Model.email</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-5 header-left">
+                <img src="~/Images/avatar.jpg" />
+            </div>
+            <div class="clearfix"> </div>
+
+        </div>
+    </div>
+</div>
+

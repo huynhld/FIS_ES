@@ -1,0 +1,66 @@
+﻿@model FISWeb.Models.LoginUser
+
+@{
+    ViewBag.Title = "Index";
+    Layout = null;
+}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>FIS System Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="application/x-javascript">
+        addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); }
+    </script>
+    <!-- font files -->
+    <link href='//fonts.googleapis.com/css?family=Muli:400,300,300italic,400italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Comfortaa:400,300,700' rel='stylesheet' type='text/css'>
+    <!-- /font files -->
+    <!-- css files -->
+    <link href="~/Content/login-animate-custom.css" rel="stylesheet" />
+    <link href="~/Content/login-style.css" rel="stylesheet" />
+    <!-- /css files -->
+</head>
+<body>
+    <h1 class="w3ls">FIS system</h1>
+    <div id="container_demo">
+        <!-- hidden anchor to stop jump http://www.css3create.com/Astuce-Empecher-le-scroll-avec-l-utilisation-de-target#wrap4  -->
+        <a class="hiddenanchor" id="toregister"></a> <a class="hiddenanchor"
+                                                        id="tologin"></a>
+        <div id="wrapper">
+            <div id="login" class="animate form">
+                @using (Html.BeginForm("CheckLogin", "Users", FormMethod.Post))
+                {
+                    <h2>Log in</h2>
+                    <p>
+                        <label for="username" class="uname" data-icon="u">
+                            <span>
+                                Your name
+                            </span>
+                        </label>
+                        @Html.TextBoxFor(model => model.Username, new { @id = "username", @required = "required", @type = "text", @placeholder = "username" })
+
+                    </p>
+                    <p>
+                        <label for="password" class="youpasswd" data-icon="p">
+                            <span>
+                                Your password
+                            </span>
+                        </label>
+                        @Html.TextBoxFor(model => model.Password, new { @id = "password", @required = "required", @type = "password", @placeholder = "password" })
+                    </p>
+                    <p class="keeplogin">
+                        @Html.CheckBoxFor(model => model.RememberMe, new { })
+                        @Html.LabelFor(model => model.RememberMe)
+                    </p>
+                    <p class="login button">
+                        <input type="submit" value="Login" />
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+    <p class="agileits">© 2016 FIS System. All Rights Reserved</p>
+</body>
+</html>

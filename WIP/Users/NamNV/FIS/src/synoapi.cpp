@@ -161,6 +161,7 @@ int SynoApi::GetPackage(unsigned char *pData) {
 
 	}
 	PacketLen=(recvBuf[7]<<8)+recvBuf[8];
+	std::cout << PacketLen << std::endl;
 	while(true) {
 		ret = 0;
 		/* set timeout value within input loop */

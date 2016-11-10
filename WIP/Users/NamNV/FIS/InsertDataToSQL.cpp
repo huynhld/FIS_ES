@@ -440,7 +440,7 @@ int main(int argc, const char** argv)
 					minuResultThree, distanceLimit, angleLimit * PI / 180);
 	float current_percent_one = static_cast<float>((minutiaeOne.size() < minutiaeTwo.size() ? minutiaeOne.size() : minutiaeTwo.size())  - countTwo)/minutiaeOne.size();
 	float current_percent_two = static_cast<float>((minutiaeTwo.size() < minutiaeThree.size() ? minutiaeTwo.size() : minutiaeThree.size()) - countThree)/minutiaeTwo.size();
-	if(current_percent_one < 0.60 && current_percent_two < 0.60) {
+	if(current_percent_one < 0.50 && current_percent_two < 0.50) {
 		SQL sql;
 		sql.create_table();
 		// void create_table();
@@ -463,6 +463,9 @@ int main(int argc, const char** argv)
 	}else {
 		cout << "Two fingerprint not match! " << current_percent_one << "-" << countTwo
 			 << " : " << current_percent_two << "-" << countThree << endl;
+		remove( "./fingerprintimage.bmp" );
+		remove( "./fingerprintimagetwo.bmp" );
+		remove( "./fingerprintimagethree.bmp" );
 	}
 	
 

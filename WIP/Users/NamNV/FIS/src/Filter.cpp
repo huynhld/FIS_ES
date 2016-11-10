@@ -58,7 +58,7 @@ namespace Filter{
 
         }
         minutiae = minutiaeNew;
-        if(bifurcation < ridgeending) {
+        if(bifurcation < ridgeending && bifurcation != 0) {
             locX = locXBif / bifurcation;
             locY = locYBif / bifurcation;
         }else {

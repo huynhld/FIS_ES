@@ -2,10 +2,11 @@
 #include <cmath>
 #include <algorithm> 
 #include <iostream>
+#include <cstring>
 bool Functions::IsMinutiaeMatching(Minutiae m1,
 	Minutiae m2, int distanceLimit, double angleLimit, Minutiae minuChanging)
 {
-	Minutiae m = m2.GetMinutiaeAfterChange(minuChanging.getLocX(), minuChanging.getLocY(), minuChanging.getDirect(), 128, 128);
+	Minutiae m = m2.GetMinutiaeAfterChange(minuChanging.getLocX(), minuChanging.getLocY(), minuChanging.getDirect(), 0, 0);
 	int distance = round(sqrt(pow(m.getLocX() - m1.getLocX(), 2) + pow(m.getLocY() - m1.getLocY(), 2)));
 	double angleRotate = std::min(abs(m.getDirect() - m1.getDirect()), PI * 2 - abs(m.getDirect() - m1.getDirect()));
 	if ((distance < distanceLimit) && (angleRotate < angleLimit))
@@ -40,12 +41,13 @@ Minutiae Functions::GetMinutiaeChanging_UseHoughTransform(vector<Minutiae> minuS
 	Minutiae m2;
 	double _deltaX;
 	double _deltaY;
-	for (i = 0; i < angleSetLength; i++) {
-		for (j = 0; j < deltaYSetLength; j++) {
-			for (k = 0; k < deltaXSetLength; k++)
-				A[i*deltaXSetLength*deltaYSetLength + j*deltaXSetLength + k] = 0;
-		}
-	}
+	memset(A, 0, sizeof(A[0]) * deltaXSetLength * deltaYSetLength * angleSetLength);
+	// for (i = 0; i < angleSetLength; i++) {
+	// 	for (j = 0; j < deltaYSetLength; j++) {
+	// 		for (k = 0; k < deltaXSetLength; k++)
+	// 			A[i*deltaXSetLength*deltaYSetLength + j*deltaXSetLength + k] = 0;
+	// 	}
+	// }
 	//std::cout << i << "   " << j << "   " << k << std::endl;
 	//std::cout << (i-1)*deltaXSetLength*deltaYSetLength + (j-1)*deltaXSetLength + k << std::endl;
 	for (i = 0; i < minuSet1.size(); i++)

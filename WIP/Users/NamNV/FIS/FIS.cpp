@@ -11,6 +11,7 @@
 #include "header/Functions.h"
 #include "header/SQL.h"
 #include "header/synoapi.h"
+#include "header/MaskGabor.h"
 #include <ctime>
 #include <stdio.h>
 #include <sstream>
@@ -20,14 +21,17 @@ using namespace std;
 
 
 int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
-int SouceImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
+//int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
-
-const int angleLimit = 5;
-const int distanceLimit = 25;
-const int minuNumberLimit = 14; 
-double image_mean = 50;
-double image_variance = 300;
+const int maskNumber = 32;
+const int angleLimit = 40;
+const int distanceLimit = 20;
+const int minuNumberLimit = 14;
+const int f = 7;
+const int fi = 3; 
+double image_mean = 100;
+double image_variance = 100;
+int locX = 0, locY = 0;
 
 void GetDirectionMatrix(int widthSqare)
 {
@@ -88,44 +92,154 @@ void LoadImageData(Mat im)
 			int temp = (int)im.at<uchar>(Point(x, y));
 			ImageData[x][y] = temp;
 			temp_mean += temp;
-			SouceImageData[x][y] = temp;
+			//ImageData[x][y] = temp;
 		}
 	}
 	//out << (int)im.at<uchar>((1, 0)) << " " << (int)im.at<uchar>(Point(1, 0)) << endl;
 	image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
 	//cout << image_mean << endl;
 	GetDirectionMatrix(4);
-	int WindowSize = 26;
-	for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
-        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
-            cv::Rect roi(i, j, WindowSize, WindowSize);
+	// int WindowSize = 9;
+	// for (int i = 1; i < IMAGE_WIDTH - 1 -WindowSize; i+=WindowSize) {
+ //        for (int j = 1; j < IMAGE_HEIGHT -1-WindowSize; j+=WindowSize) {
+ //            cv::Rect roi(i, j, WindowSize, WindowSize);
 
-            cv::Mat roiImage = im(roi);
-            //double direction = calculateDirectionForWindow(roiImage);
+ //            cv::Mat roiImage = im(roi);
+ //            //double direction = calculateDirectionForWindow(roiImage);
 
-            // TODO: Refactor direction drawing into own function
-            // direction = i % 360; // for testing
-            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
-            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
-                                                             // in math, +y is typically
-                                                             // considered to go in the top
-                                                             // direction whereas in the image
-                                                             // it goes towards the bottom
+ //            // TODO: Refactor direction drawing into own function
+ //            // direction = i % 360; // for testing
+ //            double xDir = std::cos((directMatrix[i][j] * 180 / PI)/180*M_PI);
+ //            double yDir = -1 * std::sin((directMatrix[i][j] * 180 / PI)/180*M_PI); // y-Axis is inverted because
+ //                                                             // in math, +y is typically
+ //                                                             // considered to go in the top
+ //                                                             // direction whereas in the image
+ //                                                             // it goes towards the bottom
 
-            cv::Point p1(
-                         WindowSize/2 + ((WindowSize/4)*xDir),
-                         WindowSize/2 + ((WindowSize/4)*yDir));
-            cv::Point p2(
-                         WindowSize/2 - ((WindowSize/4)*xDir),
-                         WindowSize/2 - ((WindowSize/4)*yDir));
-            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
-            cv::line(roiImage, p1, p2,  1);
-        }
-    }
-    imshow("Direction Field", im); waitKey(0);
+ //            cv::Point p1(
+ //                         WindowSize/2 + ((WindowSize/4)*xDir),
+ //                         WindowSize/2 + ((WindowSize/4)*yDir));
+ //            cv::Point p2(
+ //                         WindowSize/2 - ((WindowSize/4)*xDir),
+ //                         WindowSize/2 - ((WindowSize/4)*yDir));
+ //            //cv::Scalar colorScalar = cv::Scalar(0, 0, 255);
+ //            cv::line(roiImage, p1, p2,  1);
+ //        }
+ //    }
+ //    imshow("Direction Field", im); waitKey(0);
 }
 
 
+
+
+double** GetMaskFilter(double filterDirect, std::vector<MaskGabor> MaskGaborCollection)
+{
+		
+	MaskGabor mask;
+	for(int i=0;i<maskNumber;i++)
+	{
+		if(filterDirect>=i*PI/maskNumber&&filterDirect<(i+1)*PI/maskNumber)
+		{
+			mask = (MaskGabor) MaskGaborCollection[i];
+			return mask.get_mask();
+		}
+	}
+	mask = (MaskGabor)MaskGaborCollection[maskNumber-1];
+	return mask.get_mask();
+
+}
+double** GetMaskFilter(double filterDirect,int widthSquare,double f,int fi)
+{			
+	double** rtMask = new double*[2*widthSquare+1];
+	for(int x=0;x<2*widthSquare+1;x++){
+		rtMask[x] = new double[2*widthSquare+1];
+		for(int y=0;y<2*widthSquare+1;y++)
+		{
+			double x1 = sin(filterDirect)*(x-widthSquare) + cos(filterDirect)*(y-widthSquare);
+			double y1 = sin(filterDirect)*(y-widthSquare) - cos(filterDirect)*(x-widthSquare);
+			rtMask[x][y] = exp(-0.5*(pow(x1,2)/pow(fi,2) + pow(y1,2)/pow(fi,2)))*cos(2*PI*f*x1);
+		}
+	}
+		
+	return rtMask;
+}
+
+
+
+void ToFiltring(Mat& img, int widthSquare,int f,int fi)
+{
+	std::vector<MaskGabor> MaskGaborCollection;
+	double direct = 0;
+	for(int i=0;i<maskNumber;i++)
+	{
+		MaskGabor mask_ca(4,direct,1.0/f,fi);
+		MaskGaborCollection.push_back(mask_ca);
+		direct += PI/maskNumber;
+	}	
+	cout << "ToFiltring" << endl;
+	double pointValue = 0;
+	for(int x=0;x<IMAGE_WIDTH-2*widthSquare-1;x++)
+	{
+		for(int y=0;y<IMAGE_HEIGHT-2*widthSquare-1;y++)
+		{
+			double** mask;
+			if(maskNumber>0)
+			{
+				mask = GetMaskFilter(directMatrix[x][y],MaskGaborCollection);
+			}
+			else
+			{
+				mask = GetMaskFilter(directMatrix[x][y],widthSquare,1.0/f,fi);
+			}
+			for(int i=0;i<2*widthSquare+1;i++)
+			{
+				for(int j=0;j<2*widthSquare+1;j++)
+				{
+					pointValue += mask[i][j]*ImageData[i+x][j+y];
+				}
+			}
+				
+			if(pointValue<0)
+				pointValue = 0;
+			if(pointValue>255)
+				pointValue = 255;
+			ImageData[x][y] = static_cast<int>(pointValue);
+			img.at<uchar>((Point(x, y))) = ImageData[x][y];
+		}
+	}
+}
+
+
+void normalization(Mat& img, int MEAN, int VARIANCE)
+{	
+	for (int i = 0; i<IMAGE_WIDTH; i++)
+	{
+		for (int j = 0; j<IMAGE_HEIGHT; j++)
+		{
+			double tempData = static_cast<double>(ImageData[i][j]);
+			if (tempData>image_mean)
+			{
+				ImageData[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+			}
+			else
+			{
+				ImageData[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
+			}
+			img.at<uchar>((Point(i, j))) = (uchar) ImageData[i][j];
+
+		}
+	}
+}
+
+void change_loc(std::vector<Minutiae>& minutiae, int _locX, int _locY)
+{
+	for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
+		//cout << "Before" << minutiae[i].getLocX() << endl;
+		minutiae[i].setLocX(minutiae[i].getLocX() - _locX);
+		minutiae[i].setLocY(minutiae[i].getLocY() - _locY);
+		//cout << "AFter" << minutiae[i].getLocX() << " " <<   minutiae[i].getLocY()<< endl;
+	}
+}
 
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
@@ -138,15 +252,19 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 		cout << "Could not open or find the image" << endl;
 		return -1;
 	}
-
+	memset(ImageData, 0, sizeof(ImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
+	//memset(ImageData, 0, sizeof(ImageData[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
+	memset(directMatrix, 0, sizeof(directMatrix[0][0]) * IMAGE_WIDTH * IMAGE_HEIGHT);
 	//imshow("Before", img); waitKey(0);
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
-	//normalization(img, 50, 300);
-	//imshow("After", img); waitKey(0);
+	normalization(img, 30, 100);
+	imshow("After", img); waitKey(0);
+	ToFiltring(img, 4,f,fi);
+	imshow("After ToFiltring", img); waitKey(0);
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	//imshow("After", img); waitKey(0);
-	localThreshold::binarisation(img, 26, 29);
+	localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
 	//binarisation(img);
 	//imshow("After binarisation", img); waitKey(0);
 	cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
@@ -158,37 +276,39 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	cv::bitwise_not(img, img);    //Inverse for bit-operations
 	GuoHall::thinning(img);
 	cv::bitwise_not(img, img);
-	//imshow("After thinning", img); waitKey(0);
+	imshow("After thinning", img); waitKey(0);
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
 	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
 
 	//Minutiae-filtering
-	Filter::filterMinutiae(minutiae);
+	Filter::filterMinutiae(minutiae, locX, locY);
 	std::cout << "After filter: " << minutiae.size() << std::endl;
 
 
 
-    // Mat minutImg2 = img.clone();
-    // cvtColor(img, minutImg2, CV_GRAY2RGB);
-    // for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
-    //     //add an transparent square at each minutiae-location
-    //     int squareSize = 5;     //has to be uneven
-    //     Mat roi = minutImg2(Rect(minutiae[i].getLocX()-squareSize/2, minutiae[i].getLocY()-squareSize/2, squareSize, squareSize));
-    //     double alpha = 0.3;
-    //     if(minutiae[i].getType() == Minutiae::RIDGEENDING){
-    //         Mat color(roi.size(), CV_8UC3, cv::Scalar(255,0,0));    //blue square for ridgeending
-    //         addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
-    //         //iRIDGEENDING++;
-    //     }else if(minutiae[i].getType() == Minutiae::BIFURCATION){
-    //         Mat color(roi.size(), CV_8UC3, cv::Scalar(0,0,255));    //red square for bifurcation
-    //         addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
-    //         //iBIFURCATION++;
-    //     }
+    Mat minutImg2 = img.clone();
+    cvtColor(img, minutImg2, CV_GRAY2RGB);
+    for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
+        //add an transparent square at each minutiae-location
+        int squareSize = 5;     //has to be uneven
+        Mat roi = minutImg2(Rect(minutiae[i].getLocX()-squareSize/2, minutiae[i].getLocY()-squareSize/2, squareSize, squareSize));
+        double alpha = 0.3;
+        if(minutiae[i].getType() == Minutiae::RIDGEENDING){
+            Mat color(roi.size(), CV_8UC3, cv::Scalar(255,0,0));    //blue square for ridgeending
+            addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
+            //iRIDGEENDING++;
+        }else if(minutiae[i].getType() == Minutiae::BIFURCATION){
+            Mat color(roi.size(), CV_8UC3, cv::Scalar(0,0,255));    //red square for bifurcation
+            addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
+            //iBIFURCATION++;
+        }
 
-    // }
-    // //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
-    // imshow( "After get", minutImg2 );   waitKey(0);                //
+    }
+    //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
+    imshow( "After get", minutImg2 );   waitKey(0);                //
+    // imwrite("testimage.bmp",minutImg2);
+    change_loc(minutiae, locX, locY);
 	return 0;
 }
 
@@ -209,25 +329,25 @@ int main(int argc, const char** argv)
  //        exit(1);
  //    }
 
-	  clock_t tStart = clock();
- //    SynoApi *api = new SynoApi();
-	// if(!api->is_opened()) {
-	// 	api->show_message(-1);
-	// 	return 0;
-	// }
-	// int ret = api->get_img();
-	// if(ret != PS_OK) {
-	// 	api->show_message(ret);
-	// 	return 0;
-	// }
-	// ret = api->upload_img("fingerprintimage.bmp");
-	// if(ret != PS_OK) {
-	// 	api->show_message(ret);
-	// 	return 0;
-	// }
-	// if(api != NULL) {
-	// 	delete api;
-	// }
+	clock_t tStart = clock();
+    SynoApi *api = new SynoApi();
+	if(!api->is_opened()) {
+		api->show_message(-1);
+		return 0;
+	}
+	int ret = api->get_img();
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	ret = api->upload_img("fingerprintimage.bmp");
+	if(ret != PS_OK) {
+		api->show_message(ret);
+		return 0;
+	}
+	if(api != NULL) {
+		delete api;
+	}
 
 	// ---Init data---///
 	double scaleSet[] = { 0.8,0.9,1.0,1.1,1.2 };
@@ -277,11 +397,11 @@ int main(int argc, const char** argv)
 	//-- End Init Data -- //	
 	vector<Minutiae> minutiaeOne;
 	vector<Minutiae> minutiaeTwo;
-	int result = getMinutiae(minutiaeOne, "/home/huynhld/FIS_ES/WIP/Users/HuynhLD/corepoint_delta_detection/img/img_l_1_2");
+	int result = getMinutiae(minutiaeOne, "./fingerprintimage.bmp");
 	if(result == -1) {
 		return 0;
 	}
-	show_vector(minutiaeOne);
+	//show_vector(minutiaeOne);
 	//getMinutiae(minutiaeTwo, "/home/namte/Desktop/Untitled Folder 2/namte.bmp");
 	//show_vector(minutiaeTwo);
 	//show_vector(minutiaeOne);
@@ -310,17 +430,17 @@ int main(int argc, const char** argv)
 		    // iterator->first = key
 		    // iterator->second = value
 		    vector<Minutiae> v = static_cast<vector<Minutiae> > (iterator->second);
-		    show_vector(v);
+		    //show_vector(v);
 		    Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
 				v, angleSet, deltaXSet,
 				deltaYSet, anglesCount, deltaXCount,
 				deltaYCount, angleLimit * PI / 180,
-				IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
+				0, 0);
 			int count = Functions::CountMinuMatching(minutiaeOne , v,
 				minuResult, distanceLimit, angleLimit * PI / 180);
-			float current_percent = static_cast<float>(minutiaeOne.size() - count)/minutiaeOne.size();
+			float current_percent = static_cast<float>((minutiaeOne.size() < v.size() ? minutiaeOne.size() : v.size()) - count)/minutiaeOne.size();
 			cout << "Percent: " << current_percent << " + id: " << static_cast<std::string>(iterator->first) << " Count: " << count << endl;
-			if(current_percent < 0.80 && current_percent < percent) {
+			if(current_percent < 0.35 && current_percent < percent) {
 				std::string key = static_cast<std::string>(iterator->first);
 				std::istringstream is(key);
 				is >> finger_id_exist;
@@ -345,7 +465,7 @@ int main(int argc, const char** argv)
 			// }
 		// }
   //   }
-	if (percent < 0.80)
+	if (percent < 0.35)
 		cout << "Welcome : " << finger_id_exist << " : " << max_count << endl;
 	else
 	{
@@ -353,7 +473,7 @@ int main(int argc, const char** argv)
 	}
 	//cout << "Found : " << map_data.size() << " Fingerprint in database" << endl;
 
-	remove( "./fingerprintimage.bmp" );
+	//remove( "./fingerprintimage.bmp" );
 
     printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	return 0;

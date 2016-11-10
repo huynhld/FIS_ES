@@ -139,7 +139,7 @@ int SynoApi::GetPackage(unsigned char *pData) {
 	    Timeout.tv_sec  = 2;  /* seconds */
 		fd_set readfs;
 		FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
-		select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
+		select(tty_fd, &readfs, NULL, NULL, &Timeout);
 		
 		iSuccess = read(tty_fd, &cChar, 1);
 		if(iSuccess) {
@@ -161,6 +161,7 @@ int SynoApi::GetPackage(unsigned char *pData) {
 
 	}
 	PacketLen=(recvBuf[7]<<8)+recvBuf[8];
+	//std::cout << PacketLen << std::endl;
 	while(true) {
 		ret = 0;
 		/* set timeout value within input loop */
@@ -195,7 +196,8 @@ int SynoApi::read_return_package(int size) {
 	int ret = 0;
 	int i = 0;
 	int bytes_available = 0;
-	unsigned char result[20] = {'\0'};
+	unsigned char result[20];
+	memset(result,1000,sizeof(result));
 	while(true) {
 		/* set timeout value within input loop */
 	    Timeout.tv_usec = 0;  /* milliseconds */

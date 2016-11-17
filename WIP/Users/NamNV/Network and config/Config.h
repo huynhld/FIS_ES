@@ -10,6 +10,7 @@
 #define PORT "PORT"
 #define API_KEY "API_KEY"
 #define REGISTER_URL "REGISTER_URL"
+#define BACK_UP "BACK_UP"
 
 using namespace std;
 

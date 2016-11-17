@@ -26,8 +26,9 @@ class PiNetwork{
 					string minutiae_two, string minutiae_three);
 		string construct_body(string minutiae_one,
 					string minutiae_two, string minutiae_three);
-		bool send(string message);
+		bool send(string message, string &response);
 		bool send_file();
+		bool send_file_deviceId(string file_path);
 };
 
 #endif

@@ -24,7 +24,7 @@ bool PiNetwork::send_register_request(string minutiae_one,
 	string CRLF = "\r\n";
 	string header = "POST ";
 	
-	string url = config->get_value(REGISTER_URL);
+	string url = config->get_value(BACK_UP);
 	header.append(url);
 	header.append(" HTTP/1.0");
 	header.append(CRLF);
@@ -42,7 +42,9 @@ bool PiNetwork::send_register_request(string minutiae_one,
 	header.append(body);
 	
 	//std::cout << header << std::endl;
-	return send(header);
+	string response = "";
+	//cout << header << endl;
+	return send(header, response);
 }
 
 bool PiNetwork::send_file()
@@ -50,7 +52,7 @@ bool PiNetwork::send_file()
 	string CRLF = "\r\n";
 	string header = "POST ";
 	
-	string url = config->get_value(REGISTER_URL);
+	string url = config->get_value(BACK_UP);
 	header.append("/Admin/TestPostMethod");
 	header.append(" HTTP/1.0");
 	header.append(CRLF);
@@ -83,12 +85,69 @@ bool PiNetwork::send_file()
 	header.append(CRLF);
 	header.append(CRLF);
 	header.append(body);
-	
-	cout << header << endl;
-	return send(header);
+
+	string response = "";
+	//cout << header << endl;
+	return send(header, response);
 }
 
-bool PiNetwork::send(string message)
+
+
+bool PiNetwork::send_file_deviceId(string file_path)
+{
+	string CRLF = "\r\n";
+	string header = "POST ";
+	
+	string deviceId = config->get_value(API_KEY);
+	string url = config->get_value(REGISTER_URL);
+	header.append(url);
+	header.append(" HTTP/1.0");
+	header.append(CRLF);
+	
+	header.append("Content-Type: multipart/form-data; boundary=---------------------------10588207912018");
+	header.append(CRLF);
+
+	std::ifstream input(file_path.c_str(), std::ios::binary);
+    // copies all data into buffer
+    std::vector<char> buffer((
+            std::istreambuf_iterator<char>(input)), 
+            (std::istreambuf_iterator<char>()));
+    string body = "-----------------------------10588207912018";
+    body.append(CRLF);
+    body.append("Content-Disposition: form-data; name=\"file\"; filename=\"IFP001.bmp\"");
+    body.append(CRLF);
+    body.append("Content-Type: image/bmp");
+    body.append(CRLF);
+    body.append(CRLF);
+    std::string str(buffer.begin(), buffer.end());
+    body.append(str);
+    body.append(CRLF);
+    body.append(CRLF);
+    body.append("-----------------------------10588207912018");
+    body.append(CRLF);
+    body.append("Content-Disposition: form-data; name=\"deviceID\"");
+    body.append(CRLF);
+    body.append(CRLF);
+    body.append(deviceId);
+    body.append(CRLF);
+    body.append("-----------------------------10588207912018--");
+	body.append(CRLF);
+
+    header.append("Content-Length: ");
+	std::stringstream ss;
+	ss << body.length();
+	header.append(ss.str());
+	header.append(CRLF);
+	header.append(CRLF);
+	header.append(body);
+	string response = "";
+	//cout << header << endl;
+	bool result = send(header, response);
+	cout << response << endl;
+	return result;
+}
+
+bool PiNetwork::send(string message, string &response)
 {
 	
 	
@@ -128,8 +187,8 @@ bool PiNetwork::send(string message)
 	fd_set readfs;
 	bytes = 4096;
 	FD_SET(sockfd, &readfs);  /* set testing for source 1 */
-	select(sockfd, &readfs, NULL, NULL, &Timeout);
-
+	int success = select(sockfd, &readfs, NULL, NULL, &Timeout);
+	if(success <= 0) return false;
 	write(sockfd,message.c_str(),message.length());
 
 	// char response[4069];
@@ -151,7 +210,7 @@ bool PiNetwork::send(string message)
 	//     false;
 	
 	Timeout.tv_usec = 0;  /* milliseconds */
-	Timeout.tv_sec  = 2;  /* seconds */
+	Timeout.tv_sec  = 1;  /* seconds */
 	std::string output;
 	bytes = 4096;
 	output.resize(bytes);
@@ -163,9 +222,9 @@ bool PiNetwork::send(string message)
 	cout << "Fail to read" << endl;
 		return false;
 	}
-	cout << output << endl;
-	string result =  output.substr(output.find_last_of("\r\n\r\n")+1, output.length());
-	if(!result.compare("Oke")) {
+	//cout << output << endl;
+	response  =  output.substr(output.find_last_of("\r\n\r\n")+1, output.length());
+	if(!response.compare("Oke")) {
 		return false;
 	}
 	return true;
@@ -195,7 +254,7 @@ int main()
 	string minutiae_three = "31+%3A+234+%3A+6.95331e-310%0D%0A32+%3A+174+%3A+1.16805%0D%0A33+%3A+59+%3A+1.07845%0D%0A33+%3A+253+%3A+1.05396%0D%0A34+%3A+169+%3A+0.989937%0D%0A34+%3A+227+%3A+1.07359%0D%0A35+%3A+251+%3A+1.07151%0D%0A36+%3A+225+%3A+0.94305%0D%0A36+%3A+227+%3A+1.14894%0D%0A39+%3A+213+%3A+1.35966%0D%0A40+%3A+41+%3A+1.25289%0D%0A40+%3A+211+%3A+0.79135%0D%0A43+%3A+177+%3A+1.04944%0D%0A45+%3A+228+%3A+0.869237%0D%0A48+%3A+257+%3A+1.17225%0D%0A49+%3A+221+%3A+1.3921%0D%0A49+%3A+250+%3A+1.35799%0D%0A49+%3A+258+%3A+1.12125%0D%0A50+%3A+189+%3A+1.3711%0D%0A51+%3A+218+%3A+0.994687%0D%0A52+%3A+245+%3A+1.03755%0D%0A53+%3A+216+%3A+1.29018%0D%0A56+%3A+218+%3A+1.11788%0D%0A57+%3A+200+%3A+1.43888%0D%0A57+%3A+202+%3A+1.24844%0D%0A58+%3A+171+%3A+1.17963%0D%0A59+%3A+200+%3A+1.19488%0D%0A59+%3A+201+%3A+1.90581%0D%0A60+%3A+169+%3A+1.95602%0D%0A60+%3A+195+%3A+1.34259%0D%0A62+%3A+218+%3A+1.93266%0D%0A65+%3A+211+%3A+1.30587%0D%0A66+%3A+154+%3A+0.856872%0D%0A66+%3A+236+%3A+1.20653%0D%0A68+%3A+152+%3A+1.28552%0D%0A68+%3A+231+%3A+1.0833%0D%0A69+%3A+203+%3A+1.01264%0D%0A72+%3A+225+%3A+1.37465%0D%0A73+%3A+169+%3A+0.890242%0D%0A73+%3A+190+%3A+1.21215%0D%0A76+%3A+184+%3A+1.15951%0D%0A76+%3A+214+%3A+1.22484%0D%0A76+%3A+219+%3A+1.04359%0D%0A78+%3A+180+%3A+1.14403%0D%0A78+%3A+182+%3A+1.21999%0D%0A78+%3A+212+%3A+1.24556%0D%0A79+%3A+236+%3A+1.20803%0D%0A80+%3A+199+%3A+1.0738%0D%0A80+%3A+207+%3A+1.2255%0D%0A82+%3A+173+%3A+1.31931%0D%0A82+%3A+231+%3A+1.07598%0D%0A83+%3A+230+%3A+1.19799%0D%0A84+%3A+224+%3A+1.27622%0D%0A86+%3A+206+%3A+1.43553%0D%0A86+%3A+222+%3A+1.1909%0D%0A86+%3A+229+%3A+1.26072%0D%0A88+%3A+190+%3A+1.14472%0D%0A94+%3A+175+%3A+0.63484%0D%0A94+%3A+192+%3A+1.35117%0D%0A94+%3A+206+%3A+0.880591%0D%0A94+%3A+228+%3A+1.47797%0D%0A96+%3A+194+%3A+1.07795%0D%0A97+%3A+224+%3A+0.968146%0D%0A98+%3A+170+%3A+0.718387%0D%0A99+%3A+194+%3A+1.11114%0D%0A99+%3A+203+%3A+1.08414%0D%0A99+%3A+205+%3A+1.28498%0D%0A101+%3A+217+%3A+1.20413%0D%0A103+%3A+215+%3A+0.997814%0D%0A104+%3A+175+%3A+1.06364%0D%0A105+%3A+209+%3A+1.06589%0D%0A106+%3A+195+%3A+1.32654%0D%0A106+%3A+251+%3A+0.887837%0D%0A107+%3A+226+%3A+1.06813%0D%0A107+%3A+254+%3A+1.11236%0D%0A109+%3A+203+%3A+1.1137%0D%0A110+%3A+40+%3A+1.12484%0D%0A111+%3A+195+%3A+0.29829%0D%0A111+%3A+219+%3A+0.700276%0D%0A112+%3A+241+%3A+1.11319%0D%0A113+%3A+206+%3A+1.16242%0D%0A114+%3A+239+%3A+1.32343%0D%0A115+%3A+193+%3A+1.19963%0D%0A117+%3A+195+%3A+0.572266%0D%0A118+%3A+210+%3A+1.26423%0D%0A124+%3A+215+%3A+0.240448%0D%0A129+%3A+110+%3A+0.204939%0D%0A129+%3A+112+%3A+0.270705%0D%0A137+%3A+231+%3A+3.13331%0D%0A138+%3A+202+%3A+0.738413%0D%0A139+%3A+229+%3A+0.440435%0D%0A141+%3A+220+%3A+1.30719%0D%0A143+%3A+163+%3A+3.1089%0D%0A143+%3A+165+%3A+3.01113%0D%0A149+%3A+176+%3A+3.10605%0D%0A150+%3A+154+%3A+3.13735%0D%0A152+%3A+164+%3A+2.91533%0D%0A160+%3A+118+%3A+1.98107%0D%0A161+%3A+184+%3A+2.8161%0D%0A163+%3A+112+%3A+3.01619%0D%0A172+%3A+233+%3A+2.95774%0D%0A173+%3A+131+%3A+1.5748%0D%0A181+%3A+233+%3A+2.90111%0D%0A182+%3A+138+%3A+2.85508%0D%0A182+%3A+222+%3A+2.36764%0D%0A183+%3A+58+%3A+1.70039%0D%0A184+%3A+33+%3A+2.86439%0D%0A187+%3A+139+%3A+3.00322%0D%0A190+%3A+136+%3A+1.9608%0D%0A190+%3A+222+%3A+3.12412%0D%0A195+%3A+145+%3A+1.88075%0D%0A199+%3A+227+%3A+2.44921%0D%0A199+%3A+229+%3A+1.40742%0D%0A202+%3A+96+%3A+1.49295%0D%0A203+%3A+94+%3A+2.58053%0D%0A208+%3A+146+%3A+2.57647%0D%0A210+%3A+145+%3A+1.89248%0D%0A213+%3A+77+%3A+2.35542%0D%0A214+%3A+75+%3A+2.35425%0D%0A216+%3A+35+%3A+2.80721%0D%0A216+%3A+37+%3A+2.62221%0D%0A218+%3A+244+%3A+2.53919%0D%0A221+%3A+113+%3A+1.6737%0D%0A224+%3A+51+%3A+1.86829%0D%0A224+%3A+107+%3A+0.127647%0D%0A224+%3A+154+%3A+2.52523%0D%0A225+%3A+125+%3A+1.83583%0D%0A226+%3A+100+%3A+1.84942%0D%0A226+%3A+148+%3A+2.52077%0D%0A226+%3A+154+%3A+2.14074";
 	PiNetwork* network = PiNetwork::getInstance();
 	//bool result = network->send_register_request(minutiae_one, minutiae_two , minutiae_three);
-	bool result = network->send_file();
+	bool result = network->send_file_deviceId("4.bmp");
 	if(result == true) {
 		std::cout << "Hello" << std::endl;
 	}else {

@@ -20,4 +20,6 @@ add_library(
     Others
     SQL.cpp
     synoapi.cpp
+    Config.cpp
+    PiNetwork.cpp
 )

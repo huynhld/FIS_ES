@@ -12,5 +12,5 @@ add_subdirectory(src)
 
 add_executable(FIS FIS.cpp)
 add_executable(InsertData InsertDataToSQL.cpp)
-target_link_libraries( FIS ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3)
-target_link_libraries( InsertData ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3)
+target_link_libraries( FIS ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3 wiringPi wiringPiDev)
+target_link_libraries( InsertData ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3 wiringPi wiringPiDev)

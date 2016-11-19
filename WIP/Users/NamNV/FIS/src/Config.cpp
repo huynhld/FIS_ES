@@ -1,4 +1,4 @@
-#include "Config.h"
+#include "../header/Config.h"
 
 Config* Config::instance = NULL;
 const string Config::config_file = "config.ini";

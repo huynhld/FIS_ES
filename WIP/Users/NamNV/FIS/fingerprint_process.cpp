@@ -13,6 +13,8 @@
 #include "header/MaskGabor.h"
 #include "header/PiNetwork.h"
 #include "header/logs.h"
+#include "header/csv.h"
+#include "header/Config.h"
 #include <ctime>
 #include <wiringPi.h>
 #include <lcd.h>
@@ -453,13 +455,25 @@ int matching()
     }
 
     if (percent < 0.35){
+        csv* writecsv = csv::getInstance();
         string username = sql.find_username(finger_id_exist);
+        Config* config = Config::getInstance();
+        string deviceId = config->get_value(API_KEY);
+        writecsv->write_csv(finger_id_exist, username, deviceId);
         username = username.substr(0, 16);
+        write_to_lcd("Hello", username);
         PiNetwork* piNet = PiNetwork::getInstance();
         piNet->send_log_deviceId(finger_id_exist);
         cout << "Welcome : " << username << " : " <<  finger_id_exist << " : " << max_count << endl;
-        write_to_lcd("Hello", username);
         logs::write_logs("matching","fingerprint_process", logs::OUT_STATE, "if (percent < 0.35)");
+        
+        if(writecsv != NULL){
+            delete writecsv;
+        }
+
+        if(config != NULL){
+            delete config;
+        }
         return 1;
     }
     else

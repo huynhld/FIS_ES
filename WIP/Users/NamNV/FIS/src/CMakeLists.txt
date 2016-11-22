@@ -23,4 +23,5 @@ add_library(
     Config.cpp
     PiNetwork.cpp
     logs.cpp
+    csv.cpp
 )

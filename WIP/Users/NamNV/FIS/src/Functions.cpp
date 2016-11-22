@@ -6,7 +6,7 @@
 bool Functions::IsMinutiaeMatching(Minutiae m1,
 	Minutiae m2, int distanceLimit, double angleLimit, Minutiae minuChanging)
 {
-	Minutiae m = m2.GetMinutiaeAfterChange(minuChanging.getLocX(), minuChanging.getLocY(), minuChanging.getDirect(), 0, 0);
+	Minutiae m = m2.GetMinutiaeAfterChange(minuChanging.getLocX(), minuChanging.getLocY(), minuChanging.getDirect(), 128, 144);
 	int distance = round(sqrt(pow(m.getLocX() - m1.getLocX(), 2) + pow(m.getLocY() - m1.getLocY(), 2)));
 	double angleRotate = std::min(abs(m.getDirect() - m1.getDirect()), PI * 2 - abs(m.getDirect() - m1.getDirect()));
 	if ((distance < distanceLimit) && (angleRotate < angleLimit))

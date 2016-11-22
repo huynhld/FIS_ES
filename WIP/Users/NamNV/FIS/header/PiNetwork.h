@@ -21,15 +21,17 @@ class PiNetwork{
 		Config* config;
 		static PiNetwork *p_instance;
 		PiNetwork();
+		bool send(string message, string &response, int &size);
+		string construct_body(string minutiae_one,
+			string minutiae_two, string minutiae_three);
+		string construct_body(std::string userID);
 	public:
 		static PiNetwork* getInstance();
 		bool send_register_request(string minutiae_one,
-					string minutiae_two, string minutiae_three);
-		string construct_body(string minutiae_one,
-					string minutiae_two, string minutiae_three);
-		bool send(string message, string &response, int &size);
+			string minutiae_two, string minutiae_three);
 		bool send_file();
 		bool send_file_deviceId(string file_path, string &userid, string &username);
+		bool send_log_deviceId(string userid);
 };
 
 #endif

@@ -259,9 +259,9 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	//Mat img = sourceImage.clone();
 	LoadImageData(img);
 	normalization(img, 30, 100);
-	imshow("After", img); waitKey(0);
+	//imshow("After", img); waitKey(0);
 	ToFiltring(img, 4,f,fi);
-	imshow("After ToFiltring", img); waitKey(0);
+	//imshow("After ToFiltring", img); waitKey(0);
 	//cv::cvtColor(img, img, CV_RGB2GRAY);
 	//imshow("After", img); waitKey(0);
 	localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
@@ -276,7 +276,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 	cv::bitwise_not(img, img);    //Inverse for bit-operations
 	GuoHall::thinning(img);
 	cv::bitwise_not(img, img);
-	imshow("After thinning", img); waitKey(0);
+	//imshow("After thinning", img); waitKey(0);
 
 	crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
 	cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
@@ -306,7 +306,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 
     }
     //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
-    imshow( "After get", minutImg2 );   waitKey(0);                //
+    //imshow( "After get", minutImg2 );   waitKey(0);                //
     // imwrite("testimage.bmp",minutImg2);
     change_loc(minutiae, locX, locY);
 	return 0;

@@ -66,6 +66,7 @@ namespace Filter{
             locY = locYRid / ridgeending;
         }
         std::cout << "New Loc: " << "X = " << locX << " Y = " << locY << std::endl;
+        std::cout << "bifurcation: " << bifurcation << std::endl;
         //std::cout<<"Anzahl gelöschter Minutien: " << cnt << std::endl;
     }
 

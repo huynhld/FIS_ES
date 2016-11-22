@@ -166,6 +166,39 @@ bool PiNetwork::send_file_deviceId(string file_path, string &userid, string &use
 }
 
 
+bool PiNetwork::send_log_deviceId(string userid)
+{
+	string CRLF = "\r\n";
+	string header = "POST ";
+	
+	string url = config->get_value(SEND_LOG);
+	header.append(url);
+	header.append(" HTTP/1.0");
+	header.append(CRLF);
+	
+	header.append("Content-Type: application/x-www-form-urlencoded");
+	header.append(CRLF);
+	
+	string body = construct_body(userid);
+	header.append("Content-Length: ");
+	header.append(std::to_string(body.length()));
+	header.append(CRLF);
+	header.append(CRLF);
+	header.append(body);
+	string response = "";
+	std::cout << header << std::endl;
+	int size = 0;
+	bool result = send(header, response, size);
+	if(!result) return result;
+	string s = response.substr(0, size);
+	//cout << s << endl;
+	if(s.compare("OK") == 0){
+		return true;
+	} 
+	return false;
+}
+
+
 bool PiNetwork::send(string message, string &response, int &size)
 {
 	
@@ -245,6 +278,19 @@ bool PiNetwork::send(string message, string &response, int &size)
 	size = response.find("*");
 	return true;
 }
+
+string PiNetwork::construct_body(std::string userID)
+{
+	string body = "userID=";
+	string CRLF = "\r\n";
+	string apikey = config->get_value(API_KEY);
+	body.append(userID);
+	body.append("&deviceID=");
+	body.append(apikey);
+
+	return body;
+}
+
 
 string PiNetwork::construct_body(string minutiae_one,
 					string minutiae_two, string minutiae_three)

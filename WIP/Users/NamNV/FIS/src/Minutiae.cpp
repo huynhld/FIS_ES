@@ -87,13 +87,3 @@ bool Minutiae::getMark()
         _direct = _direct - PI;
     return Minutiae(xRoot + _x,yRoot - _y,type,_direct);
  }
-
-
-void Minutiae::setFingerPrintId(int id)
-{
-    fingerprint_id = id;
-}
-int Minutiae::getFingerPrintId()
-{
-    return fingerprint_id;
-}

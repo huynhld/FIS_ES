@@ -22,4 +22,5 @@ add_library(
     synoapi.cpp
     Config.cpp
     PiNetwork.cpp
+    logs.cpp
 )

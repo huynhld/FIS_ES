@@ -14,6 +14,8 @@
 #include "header/PiNetwork.h"
 #include "header/logs.h"
 #include <ctime>
+#include <wiringPi.h>
+#include <lcd.h>
 #include <stdio.h>
 #include <sstream>
 using namespace cv;
@@ -39,6 +41,45 @@ const int deltaXUnit = 2;
 const int deltaYStart = -IMAGE_HEIGHT;
 const int deltaYFinish = IMAGE_HEIGHT;
 const int deltaYUnit = 2;
+int lcdHandle;
+
+void initWiringPi()
+{
+    wiringPiSetup();
+    lcdHandle = lcdInit(2,16,8, 11,10, 0,1,2,3,4,5,6,7);
+}
+
+
+// void scrollMessage (int line, int width,const char* message)
+// {
+//     char buf [32] ;
+//     static int position = 0 ;
+//     static int timer = 0 ;
+
+//     if (millis () < timer)
+//         return ;
+
+//     timer = millis () + 200 ;
+
+//     strncpy (buf, &message [position], width) ;
+//     buf [width] = 0 ;
+//     lcdPosition (lcdHandle, 0, line) ;
+//     lcdPuts     (lcdHandle, buf) ;
+
+//     if (++position == (strlen (message) - width))
+//         position = 0 ;
+// }
+
+
+
+void write_to_lcd(string message_line_one, string message_line_two = "")
+{
+    lcdClear(lcdHandle);
+    lcdPosition (lcdHandle, 0, 0) ; lcdPuts (lcdHandle, message_line_one.c_str()) ;
+    if(message_line_two.compare("") != 0)
+        lcdPosition (lcdHandle, 0, 1) ; lcdPuts (lcdHandle, message_line_two.c_str()) ;
+}
+
 
 
 void GetDirectionMatrix(int widthSqare)
@@ -413,14 +454,17 @@ int matching()
 
     if (percent < 0.35){
         string username = sql.find_username(finger_id_exist);
+        username = username.substr(0, 16);
         PiNetwork* piNet = PiNetwork::getInstance();
         piNet->send_log_deviceId(finger_id_exist);
         cout << "Welcome : " << username << " : " <<  finger_id_exist << " : " << max_count << endl;
+        write_to_lcd("Hello", username);
         logs::write_logs("matching","fingerprint_process", logs::OUT_STATE, "if (percent < 0.35)");
         return 1;
     }
     else
     {
+        write_to_lcd("Sorry", "Not Match");
         cout << "User Not found!"  << endl;
     }
     if(api != NULL) {
@@ -585,12 +629,15 @@ int fis_register()
 int main(int argc, const char** argv)
 {
     clock_t tStart = clock();
+
+    initWiringPi();
     //Note :  this for cmd purpose
     if(argc < 2) {
+        write_to_lcd("Error!", "Provide parameter");
         std::cout << "Please provide a image file as the parameter..." << std::endl;
         exit(1);
     }
-
+    write_to_lcd("Waiting", "Taking finger!");
     string argument(argv[1]);
     int result = 0;
     if(argument.compare("matching") == 0) {

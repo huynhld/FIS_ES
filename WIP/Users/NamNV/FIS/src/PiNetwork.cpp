@@ -186,7 +186,7 @@ bool PiNetwork::send_log_deviceId(string userid)
 	header.append(CRLF);
 	header.append(body);
 	string response = "";
-	std::cout << header << std::endl;
+	//std::cout << header << std::endl;
 	int size = 0;
 	bool result = send(header, response, size);
 	if(!result) return result;

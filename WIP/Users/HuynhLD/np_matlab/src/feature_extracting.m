@@ -10,7 +10,7 @@ J=uint8((1-J)*255);
 J=gabor_filter(J,21,6,1,2);
 Rm1=minutiae(J,R,core);
 %-----------------------------------------------
-[J, R]=normalize(I(:,:,2),10);
+[J, R]=normalize(I(:,:,1),10);  % the orginal: [J, R]=normalize(I(:,:,2),10);
 J=(255-double(J))/255;
 J=sigmoid(J,25,0.4);
 J=uint8((1-J)*255);

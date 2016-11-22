@@ -41,9 +41,4 @@ if N4~=0
     mi(:,4)=abs(mi(:,4)/N4);
     mi(3,4)=N4;
 end;
-n_tem=[tem(1,1);tem(2,1);tem(1,2);tem(2,2);mi(:,1);mi(:,2);mi(:,3);mi(:,4)];
-
-%disp(n_tem);
-%n_temp is input layer of neuralnetwork
-% save to file
-save('../database/n_temp.mat', 'n_tem');
+neural_tem=[tem(1,1);tem(2,1);tem(1,2);tem(2,2);mi(:,1);mi(:,2);mi(:,3);mi(:,4)];

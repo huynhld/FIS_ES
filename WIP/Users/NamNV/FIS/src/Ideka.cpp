@@ -11,9 +11,9 @@ namespace ideka {
     void binOptimisation(cv::Mat& im){
         ridgeEnhancement(im);
         valleyEnhancement(im);
-        //smooth(im);
-        //cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
-        //morphologyEx( im, im, MORPH_CLOSE, element );
+        smooth(im);
+        cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+        morphologyEx( im, im, MORPH_CLOSE, element );
     }
 
     void ridgeEnhancement(cv::Mat& im){

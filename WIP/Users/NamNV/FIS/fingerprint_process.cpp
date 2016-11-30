@@ -322,7 +322,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
     //imshow( "After get", minutImg2 );   waitKey(0);                //
     // imwrite("testimage.bmp",minutImg2);
-    change_loc(minutiae, locX, locY);
+    //change_loc(minutiae, locX, locY);
     return 0;
 }
 

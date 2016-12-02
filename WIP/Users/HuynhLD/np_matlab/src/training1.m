@@ -21,4 +21,3 @@ while (epoch<1000)&&(J>=epsilon)
     J=((D-Y)^2)/2;
     epoch=epoch+1;
 end;
-save('../database/w.mat', 'W');

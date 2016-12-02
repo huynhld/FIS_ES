@@ -6,7 +6,7 @@ full =[];
 for i = 101:110
     for j = 1:8
         tic
-        uri = strcat('../img/DB3_B/', int2str(i), '_', int2str(j), '.tif');
+        uri = strcat('../img/DB4_B/', int2str(i), '_', int2str(j), '.tif');
         I = imread(uri);
         [r f t] = main1(I);
         %disp(i);

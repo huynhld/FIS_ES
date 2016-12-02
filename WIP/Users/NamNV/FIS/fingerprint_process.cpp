@@ -26,7 +26,7 @@ using namespace std;
 
 int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
-const int maskNumber = 32;
+const int maskNumber = 9;
 const int angleLimit = 85;
 const int distanceLimit = 30;
 const int minuNumberLimit = 14;
@@ -190,7 +190,7 @@ void ToFiltring(Mat& img, int widthSquare,int f,int fi)
     double direct = 0;
     for(int i=0;i<maskNumber;i++)
     {
-        MaskGabor mask_ca(4,direct,1.0/f,fi);
+        MaskGabor mask_ca(widthSquare,direct,1.0/f,fi);
         MaskGaborCollection.push_back(mask_ca);
         direct += PI/maskNumber;
     }   
@@ -259,7 +259,7 @@ void change_loc(std::vector<Minutiae>& minutiae, int _locX, int _locY)
 
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
-    Mat img = cv::imread(imagePath, 0);
+    Mat img = cv::imread(imagePath, IMREAD_GRAYSCALE);
 
     if (!img.data)                              // Check for invalid input
     {
@@ -272,7 +272,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //imshow("Before", img); waitKey(0);
     //Mat img = sourceImage.clone();
     LoadImageData(img);
-    normalization(img, 30, 100);
+    //normalization(img, 100, 100);
     //imshow("After", img); waitKey(0);
     ToFiltring(img, 4, f, fi);
     //imshow("After ToFiltring", img); waitKey(0);
@@ -281,7 +281,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
     //binarisation(img);
     //imshow("After binarisation", img); waitKey(0);
-    cv::threshold(img, img, 0, 255, cv::THRESH_BINARY);
+	cv::threshold(img, img, 50, 255, cv::THRESH_BINARY);
     Mat binImg = img.clone();
     ideka::binOptimisation(img);
     //imshow("After binOptimisation", img); waitKey(0);
@@ -292,7 +292,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     cv::bitwise_not(img, img);
     //imshow("After thinning", img); waitKey(0);
 
-    crossingNumber::getMinutiae(img, minutiae, 30, directMatrix);
+	crossingNumber::getMinutiae(img, minutiae, 15, directMatrix);
     cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
     int locX = 0, locY = 0;
     //Minutiae-filtering
@@ -322,7 +322,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //namedWindow( "Minutien gefiltert", WINDOW_AUTOSIZE );     // Create a window for display.
     //imshow( "After get", minutImg2 );   waitKey(0);                //
     // imwrite("testimage.bmp",minutImg2);
-    change_loc(minutiae, locX, locY);
+    //change_loc(minutiae, locX, locY);
     return 0;
 }
 

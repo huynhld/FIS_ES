@@ -1,5 +1,5 @@
 % HuynhLD.
-function [r f t]= main1(I)
+function [r W, neural_tem]= main1(I)
 try
     
 %1. Read sample image.
@@ -28,4 +28,5 @@ r = mean(W*neural_tem);
 
 catch
     r = 0;
+    t = 0;
 end

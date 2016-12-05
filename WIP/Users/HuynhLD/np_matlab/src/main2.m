@@ -1,34 +1,31 @@
-tic
-
-uri = strcat('../img/DB1_B/', int2str(101), '_', int2str(1), '.tif');
-I = imread(uri);
-
+function [r W f t] = main2(I)
+r = 0;
+try
 [template, core]=feature_extracting(I);
 
+f = toc;
 neural_tem=neural_template(template);
-
+    
 H = 10;
 nuy = 10^-7;
 epsilon = 10^-4;
 [V, W] = training2(neural_tem, H, nuy, epsilon);
-
-mean(mean(mtimes(neural_tem,W)))
-
-
-    for i=101:110
-        for j=1:8
-            try
-            disp(strcat(int2str(i), ' ', int2str(j)));
-            uri = strcat('../img/DB1_B/', int2str(i), '_', int2str(j), '.tif');
-            I = imread(uri);
-            [template, core]=feature_extracting(I);
-            neural_tem=neural_template(template);
-            mean(mean(mtimes(neural_tem,W)))
-            catch
-                disp('error');
-            end
-        end
-    end
-
-
-toc
+t = toc;
+r = mean(mean(mtimes(neural_tem,W)));
+%r = mean(mean(neural_tem,W));
+catch
+     if exist('f','var')
+     else
+         f = toc;
+     end
+     
+     if exist('t','var')
+     else
+         t = toc;
+     end
+     
+     if exist('W','var')
+     else
+         W = [];
+     end
+end

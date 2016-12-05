@@ -75,10 +75,12 @@ end
 
 %---------------------------------------------------------------------------
 % Test: test each image with other group
-
-%tic
+%{
+tic
 result = [];
-
+fe = [];
+training = [];
+full =[];
 for i = 1:5
     for j = 1:4
         rs = [];
@@ -86,7 +88,7 @@ for i = 1:5
         uri = strcat('../img/oishi/', int2str(i), '_', int2str(j), '.bmp');
         I = imread(uri);
         [r, W, neural_tem] = main1(I);
-        disp(r);
+
         rs = [rs r];
         disp(uri);
         catch
@@ -120,4 +122,85 @@ for i = 1:5
         result = [result ; rs];
     end
 end
+%}
 %toc
+%***************************************************************%
+%For net 2%
+
+tic
+
+result = [];
+
+for i = 1:4
+    for j = 1:4
+        rs = [];
+        try
+        uri = strcat('../img/oishi/', int2str(i), '_', int2str(j), '.bmp');
+        I = imread(uri);
+        [r W f t] = main2(I);
+        rs = [rs r];
+        %disp(r);
+        %disp(uri);
+        
+        catch
+            W = [];
+        end
+        
+        for k = 1:4
+            for h = 1:4
+                
+                %if i~=k
+                 
+                    %try
+                        disp(strcat( 'i:', int2str(i), ' j: ', int2str(j), ' k: ', int2str(k), ' h: ', int2str(h) ));
+                        uri = strcat('../img/oishi/', int2str(k), '_', int2str(h), '.bmp');
+                        I = imread(uri);                
+                        [template, core]=feature_extracting(I);
+                        neural_tem=neural_template(template);
+                        %W
+                        r = mean(mean(mtimes(neural_tem,W)));
+                        %r = mean(mean(neural_tem,W));
+                        
+  
+                        %disp(r);
+                        rs = [rs r];
+                        %disp(r);
+                        disp('done');
+                    %catch
+                    %    r = 0;
+                    %    rs = [rs r];
+                    %end
+                %end
+                
+            end
+        end
+        result = [result ; rs];
+    end
+end
+%toc
+
+% time np2
+fe = [];
+training = [];
+full =[];
+path = {'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02', 'f0001_01', 'f0002_05', 'f0003_10', 'f0007_09', 's0249_04','s0240_01', 's0237_07', 's0238_07', 's0248_02'};
+%for i = 101:110
+    for j = 1:72
+        
+        uri = strcat('../img/nist_fig0/figs_0/', path{j}, '.png');
+        %uri = strcat('../img/DB4_B/', int2str(i), '_', int2str(j), '.tif');
+        disp(uri);
+        tic;
+        I = imread(uri);
+        
+        [r W f t] = main2(I);
+        fe = [ fe f];
+        training = [training t];
+        
+        fu = toc;
+        full = [full fu];
+        
+        
+        disp('done');
+    end
+%end

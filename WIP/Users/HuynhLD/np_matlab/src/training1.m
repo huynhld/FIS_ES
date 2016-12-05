@@ -6,7 +6,8 @@ function W = training1(X,nuy,epsilon,D,n)
 % epsilon: nguong huan luyen
 % W: cac vector trong so duoc huan luyen
 %-------------- Tao gia tri khoi dong --------------------------
-W=[0.1 0.1 1 0.1 0.1 1 0.1 0.1 1 0.1 0.1 1 -0.1 -0.1 -0.1 -0.1];
+%W=[0.1 0.1 1 0.1 0.1 1 0.1 0.1 1 0.1 0.1 1 -0.1 -0.1 -0.1 -0.1];
+W=[rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand() rand()];
 %---------------------------------------------------------------
 epoch=0;
 J=epsilon;
@@ -21,4 +22,3 @@ while (epoch<1000)&&(J>=epsilon)
     J=((D-Y)^2)/2;
     epoch=epoch+1;
 end;
-save('../database/w.mat', 'W');

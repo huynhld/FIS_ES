@@ -35,14 +35,12 @@ void getMinutiae(Mat& im, std::vector<Minutiae>& minutiae, int border, double di
                 //std::cout<<"cn = " << cn << std::endl;
 
                 if(cn == 1){
-                    Minutiae minut(i, j, Minutiae::RIDGEENDING);
+                    Minutiae minut(i, j, Minutiae::RIDGEENDING, directMatrix[i][j]);
                     minutiae.push_back(minut);
-					minut.setDirect(directMatrix[i][j]);
                     //ridgeEndingCount++;
                 }else if(cn == 3){
-                    Minutiae minut(i, j, Minutiae::BIFURCATION);
+					Minutiae minut(i, j, Minutiae::BIFURCATION, directMatrix[i][j]);
                     minutiae.push_back(minut);
-					minut.setDirect(directMatrix[i][j]);
                     //bifurcationCount++;
                 }
             }

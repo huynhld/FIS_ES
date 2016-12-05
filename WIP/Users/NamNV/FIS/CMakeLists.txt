@@ -11,4 +11,4 @@ include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory(src)
 
 add_executable(Main fingerprint_process.cpp)
-target_link_libraries( Main ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3 wiringPi wiringPiDev)
+target_link_libraries( Main ${OpenCV_LIBS} ${SQLITE3_LIBRARIES} ExtractionAlgorithms ImageProcessing Others sqlite3 wiringPi wiringPiDev pthread)

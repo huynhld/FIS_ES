@@ -20,6 +20,7 @@
 #include <lcd.h>
 #include <stdio.h>
 #include <sstream>
+#include <thread>
 using namespace cv;
 using namespace std;
 
@@ -49,6 +50,8 @@ void initWiringPi()
 {
     wiringPiSetup();
     lcdHandle = lcdInit(2,16,8, 11,10, 0,1,2,3,4,5,6,7);
+    pinMode(29, INPUT) ;
+    pullUpDnControl(29, PUD_UP) ;
 }
 
 
@@ -336,14 +339,32 @@ void show_vector(vector<Minutiae> v) {
 }
 
 
+int g_button = 1; 
+
+void scanButton ()
+{
+    if (digitalRead (29) == HIGH) // Low is pushed
+        return ;
+    cout << "TEST" << endl;
+    while (digitalRead (29) == LOW)   // Wait for release
+        delay (10) ;
+    g_button = 0;
+}
+
+void task1()
+{
+    while(1){
+        scanButton();
+    }
+}
+
 int matching()
 {
-    logs::getInstance();
-    logs::write_logs("matching","fingerprint_process", logs::IN_STATE);
+    //logs::getInstance();
+    //logs::write_logs("matching","fingerprint_process", //logs::IN_STATE);
     // if(api != NULL) {
     //     delete api;
     // }
-    std::cout << "Done upload_img" << endl;
   // ---Init data---///
 
     int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
@@ -381,21 +402,42 @@ int matching()
 
 
     //-- End Init Data -- //      
-
-
     SynoApi *api = new SynoApi();
     if(!api->is_opened()) {
         api->show_message(-1);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
+
     int ret = api->get_img();
+
+    while(ret == 2 && g_button == 1)
+    {
+        if(g_button == 0){
+            if(api != NULL) {
+                delete api;
+            }
+            return 0;
+        }else {
+            ret = api->get_img();
+        }
+    }
+
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
 
@@ -405,20 +447,7 @@ int matching()
     if(result == -1) {
         return -1;
     }
-    //show_vector(minutiaeOne);
-    //getMinutiae(minutiaeTwo, "/home/namte/Desktop/Untitled Folder 2/namte.bmp");
-    //show_vector(minutiaeTwo);
-    //show_vector(minutiaeOne);
-    //SQL sql;
-    //sql.create_table();
-    // void create_table();
-    //  void get_all_database();
-    //  const string minutiae_database_name = "Minutiae.db";
-    //  std::vector<Minutiae> get_all();
-    //  void insert_minutiae(std::vector<Minutiae> v, int fingerprint_id);
-    //  int insert_fingerprint();
-    //int personid = sql.insert_fingerprint();
-    //sql.insert_minutiae(minutiaeOne, personid);
+
     int max_count = -1;
     int count = 0;
     string finger_id_exist = "";
@@ -428,7 +457,7 @@ int matching()
     map<std::string, vector<Minutiae> > map_data = sql.get_all_database();
     if(map_data.size() == 0 || minutiaeOne.size() == 0) {
         //cout << "Not found" << endl;
-        logs::write_logs("matching","fingerprint_process", logs::OUT_STATE, "map_data.size() == 0 || minutiaeOne.size() == 0");
+        //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE, "map_data.size() == 0 || minutiaeOne.size() == 0");
         return 0;
     } else {
         std::map<std::string, vector<Minutiae> >::iterator iterator;
@@ -465,7 +494,7 @@ int matching()
         PiNetwork* piNet = PiNetwork::getInstance();
         piNet->send_log_deviceId(finger_id_exist);
         cout << "Welcome : " << username << " : " <<  finger_id_exist << " : " << max_count << endl;
-        logs::write_logs("matching","fingerprint_process", logs::OUT_STATE, "if (percent < 0.35)");
+        //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE, "if (percent < 0.35)");
         
         if(writecsv != NULL){
             delete writecsv;
@@ -484,7 +513,7 @@ int matching()
     if(api != NULL) {
         delete api;
     }
-    logs::write_logs("matching","fingerprint_process", logs::OUT_STATE);
+    //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE);
     return 0;
 }
 
@@ -532,16 +561,25 @@ int fis_register()
     SynoApi *api = new SynoApi();
     if(!api->is_opened()) {
         api->show_message(-1);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
     int ret = api->get_img();
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
 
@@ -549,55 +587,64 @@ int fis_register()
     ret = api->get_img();
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
     ret = api->upload_img("fingerprintimagetwo.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
 
     ret = api->get_img();
     if(ret != PS_OK) {
         api->show_message(ret);
+        if(api != NULL) {
+            delete api;
+        }
         return -1;
     }
-    ret = api->upload_img("fingerprintimagethree.bmp");
-    if(ret != PS_OK) {
-        api->show_message(ret);
-        return -1;
-    }
+    // ret = api->upload_img("fingerprintimagethree.bmp");
+    // if(ret != PS_OK) {
+    //     api->show_message(ret);
+    //     return -1;
+    // }
 
     vector<Minutiae> minutiaeOne;
     vector<Minutiae> minutiaeTwo;
     vector<Minutiae> minutiaeThree;
     std::string imgPath( "./fingerprintimage.bmp");
     std::string imgPathTwo( "./fingerprintimagetwo.bmp");
-    std::string imgPathThree( "./fingerprintimagethree.bmp");
+    //std::string imgPathThree( "./fingerprintimagethree.bmp");
     getMinutiae(minutiaeOne, imgPath);
     getMinutiae(minutiaeTwo, imgPathTwo);
-    getMinutiae(minutiaeThree, imgPathThree);
+    //getMinutiae(minutiaeThree, imgPathThree);
     Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
         minutiaeTwo, angleSet, deltaXSet,
         deltaYSet, anglesCount, deltaXCount,
         deltaYCount, angleLimit * PI / 180,
         128, 144);
 
-    Minutiae minuResultThree = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeTwo ,
-        minutiaeThree, angleSet, deltaXSet,
-        deltaYSet, anglesCount, deltaXCount,
-        deltaYCount, angleLimit * PI / 180,
-        128, 144);
+    // Minutiae minuResultThree = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeTwo ,
+    //     minutiaeThree, angleSet, deltaXSet,
+    //     deltaYSet, anglesCount, deltaXCount,
+    //     deltaYCount, angleLimit * PI / 180,
+    //     128, 144);
 
     float countTwo = (float)Functions::CountMinuMatching(minutiaeOne , minutiaeTwo,
         minuResult, distanceLimit, angleLimit * PI / 180);
-    float countThree = (float)Functions::CountMinuMatching(minutiaeTwo , minutiaeThree,
-        minuResultThree, distanceLimit, angleLimit * PI / 180);
+    // float countThree = (float)Functions::CountMinuMatching(minutiaeTwo , minutiaeThree,
+    //     minuResultThree, distanceLimit, angleLimit * PI / 180);
     float min_count_one = (float) minutiaeOne.size() < minutiaeTwo.size() ? minutiaeOne.size() : minutiaeTwo.size();
-    float min_count_two = (float) minutiaeTwo.size() < minutiaeThree.size() ? minutiaeTwo.size() : minutiaeThree.size();
+   // float min_count_two = (float) minutiaeTwo.size() < minutiaeThree.size() ? minutiaeTwo.size() : minutiaeThree.size();
     float current_percent_one = (min_count_one  - countTwo) / min_count_one;
-    float current_percent_two = (min_count_two - countThree) / min_count_two;
-    if(current_percent_one < 0.50 && current_percent_two < 0.50) {
+   // float current_percent_two = (min_count_two - countThree) / min_count_two;
+    if(current_percent_one < 0.50) {
         PiNetwork* piNet = PiNetwork::getInstance();
         string userid = "";
         string username = "";
@@ -618,21 +665,19 @@ int fis_register()
         int personid = sql.insert_fingerprint(userid, username);
         sql.insert_minutiae(minutiaeOne, userid, 0);
         sql.insert_minutiae(minutiaeTwo, userid, 1);
-        sql.insert_minutiae(minutiaeThree, userid, 2);
+        //sql.insert_minutiae(minutiaeThree, userid, 2);
         show_vector(minutiaeOne);
         cout << "Insert sucess user id: " << userid << endl;
-        cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo
-        << " : " << current_percent_two << "-" << countThree << endl;
+        cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo  << endl;
         remove( "./fingerprintimage.bmp" );
         remove( "./fingerprintimagetwo.bmp" );
-        remove( "./fingerprintimagethree.bmp" );
+        //remove( "./fingerprintimagethree.bmp" );
         return 1;
     }else {
-        cout << "Two fingerprint not match! " << current_percent_one << "-" << countTwo
-        << " : " << current_percent_two << "-" << countThree << endl;
+        cout << "Two fingerprint not match! " << current_percent_one << "-" << countTwo  << endl;
         remove( "./fingerprintimage.bmp" );
         remove( "./fingerprintimagetwo.bmp" );
-        remove( "./fingerprintimagethree.bmp" );
+        //remove( "./fingerprintimagethree.bmp" );
     }
     if(api != NULL) {
         delete api;
@@ -640,25 +685,39 @@ int fis_register()
     return 0;
 }
 
+
 int main(int argc, const char** argv)
 {
     clock_t tStart = clock();
 
     initWiringPi();
     //Note :  this for cmd purpose
-    if(argc < 2) {
-        write_to_lcd("Error!", "Provide parameter");
-        std::cout << "Please provide a image file as the parameter..." << std::endl;
-        exit(1);
-    }
+    // if(argc < 2) {
+    //     write_to_lcd("Error!", "Provide parameter");
+    //     std::cout << "Please provide a image file as the parameter..." << std::endl;
+    //     exit(1);
+    // }
     write_to_lcd("Waiting", "Taking finger!");
-    string argument(argv[1]);
-    int result = 0;
-    if(argument.compare("matching") == 0) {
-        result = matching();
-    }else if(argument.compare("register") == 0) {
-        result = fis_register();
+    thread t1(task1);
+    t1.join();
+    // string argument(argv[1]);
+    // int result = 0;
+    // if(argument.compare("matching") == 0) {
+    //     result = matching();
+    // }else if(argument.compare("register") == 0) {
+    //     result = fis_register();
+    // }
+    while(1)
+    {
+        if(g_button == 1) {
+            matching();
+        }
+        else {
+            fis_register();
+            g_button = 1;
+        }
     }
+
     printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
     return 0;
 

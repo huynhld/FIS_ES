@@ -27,7 +27,7 @@ using namespace std;
 int ImageData[IMAGE_WIDTH][IMAGE_HEIGHT];
 double directMatrix[IMAGE_WIDTH][IMAGE_HEIGHT];
 const int maskNumber = 9;
-const int angleLimit = 85;
+const int angleLimit = 30;
 const int distanceLimit = 30;
 const int minuNumberLimit = 14;
 const int f = 7;

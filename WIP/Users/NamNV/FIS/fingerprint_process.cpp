@@ -367,7 +367,7 @@ int matching()
     //     delete api;
     // }
   // ---Init data---///
-
+    write_to_lcd("Searching", "Put Finger On");
     int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
     int angleSet[anglesCount];
     int i = 0;
@@ -424,6 +424,7 @@ int matching()
         }else {
             ret = api->get_img();
         }
+        delay(100);
     }
 
     if(ret != PS_OK) {
@@ -433,6 +434,7 @@ int matching()
         }
         return -1;
     }
+    write_to_lcd("Searching", "Finger Transfer");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
@@ -441,10 +443,11 @@ int matching()
         }
         return -1;
     }
-
+    write_to_lcd("Searching", "Analysing");
     vector<Minutiae> minutiaeOne;
     vector<Minutiae> minutiaeTwo;
     int result = getMinutiae(minutiaeOne, "./fingerprintimage.bmp");
+    remove( "./fingerprintimage.bmp" );
     if(result == -1) {
         return -1;
     }
@@ -472,8 +475,8 @@ int matching()
                 128, 144);
             float count = (float)Functions::CountMinuMatching(minutiaeOne , v,
                 minuResult, distanceLimit, angleLimit * PI / 180);
-            float min_count = (float) v.size() < minutiaeOne.size() ? v.size() : minutiaeOne.size();
-            float current_percent = (min_count - count) / min_count;
+            float max_count = (float) v.size();
+            float current_percent = (max_count - count) / max_count;
             cout << "Percent: " << current_percent << " + id: " << static_cast<std::string>(iterator->first) << " Count: " << count << " : " << v.size() << endl;
             if(current_percent < 0.35 && current_percent < percent) {
                 finger_id_exist = static_cast<std::string>(iterator->first);
@@ -497,13 +500,7 @@ int matching()
         cout << "Welcome : " << username << " : " <<  finger_id_exist << " : " << max_count << endl;
         //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE, "if (percent < 0.35)");
         
-        if(writecsv != NULL){
-            delete writecsv;
-        }
-
-        if(config != NULL){
-            delete config;
-        }
+        sleep(4);
         return 1;
     }
     else
@@ -522,7 +519,6 @@ int matching()
 int fis_register()
 {
     // ---Init data---///
-
     int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
     int angleSet[anglesCount];
     int i = 0;
@@ -567,7 +563,14 @@ int fis_register()
         }
         return -1;
     }
-    int ret = api->get_img();
+   int ret = api->get_img();
+   write_to_lcd("Reg Attempt 1", "Put Finger On");
+    while(ret == 2)
+    {
+        ret = api->get_img();
+        delay(100);
+    }
+
     if(ret != PS_OK) {
         api->show_message(ret);
         if(api != NULL) {
@@ -575,6 +578,7 @@ int fis_register()
         }
         return -1;
     }
+    write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
@@ -586,6 +590,13 @@ int fis_register()
 
 
     ret = api->get_img();
+    write_to_lcd("Reg Attempt 2", "Put Finger On");
+    while(ret == 2)
+    {
+        ret = api->get_img();
+        delay(100);
+    }
+
     if(ret != PS_OK) {
         api->show_message(ret);
         if(api != NULL) {
@@ -593,6 +604,7 @@ int fis_register()
         }
         return -1;
     }
+    write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimagetwo.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
@@ -602,23 +614,22 @@ int fis_register()
         return -1;
     }
 
-    ret = api->get_img();
-    if(ret != PS_OK) {
-        api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
-        return -1;
-    }
+    // ret = api->get_img();
+    // if(ret != PS_OK) {
+    //     api->show_message(ret);
+    //     if(api != NULL) {
+    //         delete api;
+    //     }
+    //     return -1;
+    // }
     // ret = api->upload_img("fingerprintimagethree.bmp");
     // if(ret != PS_OK) {
     //     api->show_message(ret);
     //     return -1;
     // }
-
+    write_to_lcd("Registing", "Analysing");
     vector<Minutiae> minutiaeOne;
     vector<Minutiae> minutiaeTwo;
-    vector<Minutiae> minutiaeThree;
     std::string imgPath( "./fingerprintimage.bmp");
     std::string imgPathTwo( "./fingerprintimagetwo.bmp");
     //std::string imgPathThree( "./fingerprintimagethree.bmp");
@@ -652,6 +663,8 @@ int fis_register()
         bool piNetResult = piNet->send_file_deviceId(imgPathTwo, userid, username);
         if(piNetResult == false) {
             cout << "Error to register" << endl;
+            write_to_lcd("Registing", "Error");
+            sleep(4);
             return -1;
         }
         SQL sql;
@@ -672,13 +685,17 @@ int fis_register()
         cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo  << endl;
         remove( "./fingerprintimage.bmp" );
         remove( "./fingerprintimagetwo.bmp" );
+        write_to_lcd("Reg Hello", username);
         //remove( "./fingerprintimagethree.bmp" );
+        sleep(4);
         return 1;
     }else {
         cout << "Two fingerprint not match! " << current_percent_one << "-" << countTwo  << endl;
         remove( "./fingerprintimage.bmp" );
         remove( "./fingerprintimagetwo.bmp" );
+        write_to_lcd("Registing", "Fail.");
         //remove( "./fingerprintimagethree.bmp" );
+        sleep(4);
     }
     if(api != NULL) {
         delete api;
@@ -689,12 +706,16 @@ int fis_register()
 
 void task2()
 {
+    cout << "task2" << endl;
     while(1)
     {
         if(g_button == 1) {
+            sleep(2);
             matching();
         }
         else {
+            sleep(2);
+            cout << " g_button = 0" << endl;
             fis_register();
             g_button = 1;
         }

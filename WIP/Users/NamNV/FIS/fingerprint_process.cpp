@@ -296,7 +296,7 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
     int locX = 0, locY = 0;
     //Minutiae-filtering
-    Filter::filterMinutiae(minutiae, locX, locY);
+	Filter::filterMinutiae(minutiae);
     std::cout << "After filter: " << minutiae.size() << std::endl;
 
 

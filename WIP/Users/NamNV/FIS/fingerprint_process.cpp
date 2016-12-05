@@ -358,6 +358,7 @@ void task1()
     }
 }
 
+
 int matching()
 {
     //logs::getInstance();
@@ -686,6 +687,20 @@ int fis_register()
 }
 
 
+void task2()
+{
+    while(1)
+    {
+        if(g_button == 1) {
+            matching();
+        }
+        else {
+            fis_register();
+            g_button = 1;
+        }
+    }
+}
+
 int main(int argc, const char** argv)
 {
     clock_t tStart = clock();
@@ -699,7 +714,9 @@ int main(int argc, const char** argv)
     // }
     write_to_lcd("Waiting", "Taking finger!");
     thread t1(task1);
+    thread t2(task2);
     t1.join();
+    t2.join();
     // string argument(argv[1]);
     // int result = 0;
     // if(argument.compare("matching") == 0) {
@@ -707,17 +724,7 @@ int main(int argc, const char** argv)
     // }else if(argument.compare("register") == 0) {
     //     result = fis_register();
     // }
-    while(1)
-    {
-        if(g_button == 1) {
-            matching();
-        }
-        else {
-            fis_register();
-            g_button = 1;
-        }
-    }
-
+    
     printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
     return 0;
 

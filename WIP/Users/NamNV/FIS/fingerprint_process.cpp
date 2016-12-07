@@ -45,6 +45,7 @@ const int deltaYStart = -IMAGE_HEIGHT;
 const int deltaYFinish = IMAGE_HEIGHT;
 const int deltaYUnit = 2;
 int lcdHandle;
+SynoApi *api = NULL;
 
 void initWiringPi()
 {
@@ -403,12 +404,9 @@ int matching()
 
 
     //-- End Init Data -- //      
-    SynoApi *api = new SynoApi();
+    
     if(!api->is_opened()) {
         api->show_message(-1);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
 
@@ -417,9 +415,6 @@ int matching()
     while(ret == 2 && g_button == 1)
     {
         if(g_button == 0){
-            if(api != NULL) {
-                delete api;
-            }
             return 0;
         }else {
             ret = api->get_img();
@@ -429,18 +424,12 @@ int matching()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
     write_to_lcd("Searching", "Finger Transfer");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
     write_to_lcd("Searching", "Analysing");
@@ -508,9 +497,6 @@ int matching()
         write_to_lcd("Sorry", "Not Match");
         cout << "User Not found!"  << endl;
     }
-    if(api != NULL) {
-        delete api;
-    }
     //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE);
     return 0;
 }
@@ -555,12 +541,8 @@ int fis_register()
 
     //-- End Init Data -- //    
 
-    SynoApi *api = new SynoApi();
     if(!api->is_opened()) {
         api->show_message(-1);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
    int ret = api->get_img();
@@ -573,18 +555,12 @@ int fis_register()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
     write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
 
@@ -599,18 +575,12 @@ int fis_register()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
     write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimagetwo.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        if(api != NULL) {
-            delete api;
-        }
         return -1;
     }
 
@@ -697,9 +667,6 @@ int fis_register()
         //remove( "./fingerprintimagethree.bmp" );
         sleep(4);
     }
-    if(api != NULL) {
-        delete api;
-    }
     return 0;
 }
 
@@ -725,7 +692,7 @@ void task2()
 int main(int argc, const char** argv)
 {
     clock_t tStart = clock();
-
+	api = new SynoApi();
     initWiringPi();
     //Note :  this for cmd purpose
     // if(argc < 2) {

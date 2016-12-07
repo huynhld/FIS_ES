@@ -83,34 +83,34 @@ void SynoApi::show_message(int ret) {
 
 //Read ImageBuffer data
 int SynoApi::read_image_buffer(int &size) {
-	sleep(1);
-	struct timeval Timeout;
-	int i = 0;
+	//sleep(1);
+	// struct timeval Timeout;
+	// int i = 0;
 	int ret = 0;
-	int count = 0;
-	unsigned char headerBuf[10]; //
-	int packageNum = 0;
-	while(true) {
-		ret = 0;
-	    /* set timeout value within input loop */
-	    Timeout.tv_usec = 0;  /* milliseconds */
-	    Timeout.tv_sec  = 2;  /* seconds */
-		fd_set readfs;
-		FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
-		ret = select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
-		if (ret==0) {
-			break;
-		}	
+	// int count = 0;
+	// unsigned char headerBuf[10]; //
+	// int packageNum = 0;
+	// while(true) {
+	// 	ret = 0;
+	//     /* set timeout value within input loop */
+	//     Timeout.tv_usec = 0;  /* milliseconds */
+	//     Timeout.tv_sec  = 2;  /* seconds */
+	// 	fd_set readfs;
+	// 	FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
+	// 	ret = select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
+	// 	if (ret==0) {
+	// 		break;
+	// 	}	
 		
-		while((read(tty_fd, &ImgData[i], 1)) > 0) {
-			i++;
-		}
-		packageNum++;
-	}
-	std::cout << "packageNum " << packageNum << std::endl;
-	//PSImgData2BMP(ImgData,"/home/namte/Desktop/NamTe/port2C/namte");
+	// 	while((read(tty_fd, &ImgData[i], 1)) > 0) {
+	// 		i++;
+	// 	}
+	// 	packageNum++;
+	// }
+	// std::cout << "packageNum " << packageNum << std::endl;
+	// //PSImgData2BMP(ImgData,"/home/namte/Desktop/NamTe/port2C/namte");
 	
-	size = i;
+	// size = i;
 	return ret;
 }
 
@@ -256,6 +256,7 @@ int SynoApi::upload_img(std::string image_path) {
 		return -1;
 	}
 	return_code = read_return_package(12);
+	std::cout << "upload_img read_return_package : " << std::endl;
 	int length;
 	int totalLen = 0;
 	int checkResult = 0;
@@ -403,7 +404,7 @@ int SynoApi::WriteBMP(char* file,unsigned char* Input)
 int SynoApi::PSImgData2BMP(unsigned char* pImgData,const char* pImageFile)
 {
 	unsigned char newData[IMAGE_X*IMAGE_Y];
-
+	memset(newData, 0, IMAGE_X*IMAGE_Y);
 	for(int i=0;i<IMAGE_X*IMAGE_Y/2;i++)
 	{
 		newData[i*2]=(*(pImgData+i)>>4)*16;

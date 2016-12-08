@@ -44,39 +44,51 @@ const int deltaXUnit = 2;
 const int deltaYStart = -IMAGE_HEIGHT;
 const int deltaYFinish = IMAGE_HEIGHT;
 const int deltaYUnit = 2;
+const int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
+int angleSet[anglesCount];
+const int deltaXCount = (int)((deltaXFinish - deltaXStart) / deltaXUnit) + 1;
+int deltaXSet[deltaXCount];
+const int deltaYCount = round((deltaYFinish - deltaYStart) / deltaYUnit) + 1;
+int deltaYSet[deltaYCount];
 int lcdHandle;
+int g_button = 1; 
 SynoApi *api = NULL;
 
-void initWiringPi()
+void init()
 {
     wiringPiSetup();
     lcdHandle = lcdInit(2,16,8, 11,10, 0,1,2,3,4,5,6,7);
     pinMode(29, INPUT) ;
     pullUpDnControl(29, PUD_UP) ;
+    // ---Init data---///
+    int i = 0;
+    int angle = angleStart;
+    while (i < anglesCount)
+    {
+        angleSet[i] = angle;
+        i++;
+        angle += angleUnit;
+    }
+    //DELTAXSET
+    i = 0;
+    int deltaX = deltaXStart;
+    while (i < deltaXCount)
+    {
+        deltaXSet[i] = deltaX;
+        i++;
+        deltaX += deltaXUnit;
+    }
+    //DELTAYSET
+    i = 0;
+    int deltaY = deltaYStart;
+    while (i < deltaYCount)
+    {
+        deltaYSet[i] = deltaY;
+        i++;
+        deltaY += deltaYUnit;
+    }
+    //-- End Init Data -- //     
 }
-
-
-// void scrollMessage (int line, int width,const char* message)
-// {
-//     char buf [32] ;
-//     static int position = 0 ;
-//     static int timer = 0 ;
-
-//     if (millis () < timer)
-//         return ;
-
-//     timer = millis () + 200 ;
-
-//     strncpy (buf, &message [position], width) ;
-//     buf [width] = 0 ;
-//     lcdPosition (lcdHandle, 0, line) ;
-//     lcdPuts     (lcdHandle, buf) ;
-
-//     if (++position == (strlen (message) - width))
-//         position = 0 ;
-// }
-
-
 
 void write_to_lcd(string message_line_one, string message_line_two = "")
 {
@@ -86,8 +98,6 @@ void write_to_lcd(string message_line_one, string message_line_two = "")
         lcdPosition (lcdHandle, 0, 1) ; lcdPuts (lcdHandle, message_line_two.c_str()) ;
 }
 
-
-
 void GetDirectionMatrix(int widthSqare)
 {
     int i, j, x, y;
@@ -96,15 +106,16 @@ void GetDirectionMatrix(int widthSqare)
     int Bx, By;
     double temp = 0;
 
-    for (j = 0; j < IMAGE_WIDTH; j++)
-    {
-        for (i = 0; i < IMAGE_HEIGHT; i++)
-        {
-            directMatrix[j][i] = 0;
-            temp += (ImageData[j][i] - image_mean)*(ImageData[j][i] - image_mean);
-        }
-    }
-    image_variance = temp / (IMAGE_WIDTH*IMAGE_HEIGHT);
+    // for (j = 0; j < IMAGE_WIDTH; j++)
+    // {
+    //     for (i = 0; i < IMAGE_HEIGHT; i++)
+    //     {
+    //         directMatrix[j][i] = 0;
+    //         temp += (ImageData[j][i] - image_mean)*(ImageData[j][i] - image_mean);
+    //     }
+    // }
+    // image_variance = temp / (IMAGE_WIDTH*IMAGE_HEIGHT);
+    // cout << image_variance << endl;
     for (x = widthSqare + 1; x < IMAGE_WIDTH - widthSqare - 1; x++)
     {
         for (y = widthSqare + 1; y < IMAGE_HEIGHT - widthSqare - 1; y++)
@@ -132,27 +143,27 @@ void GetDirectionMatrix(int widthSqare)
         }
     }
     //return directMatrix;
-    
 }
 
 void LoadImageData(Mat im)
 {
-    int temp_mean = 0;
+    //int temp_mean = 0;
     for (int x = 0; x < im.cols; x++)
     {
         for (int y = 0; y < im.rows; y++)
         {
             int temp = (int)im.at<uchar>(Point(x, y));
             ImageData[x][y] = temp;
-            temp_mean += temp;
+            //temp_mean += temp;
         }
     }
-    image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
+    //image_mean = static_cast<double>(temp_mean) / static_cast<double>(IMAGE_HEIGHT*IMAGE_WIDTH);
+    Scalar mean,dev; 
+    meanStdDev(im, mean, dev); 
+    image_mean = mean.val[0];
+    image_variance = dev.val[0]*dev.val[0];
     GetDirectionMatrix(4);
 }
-
-
-
 
 double** GetMaskFilter(double filterDirect, std::vector<MaskGabor> MaskGaborCollection)
 {
@@ -170,6 +181,7 @@ double** GetMaskFilter(double filterDirect, std::vector<MaskGabor> MaskGaborColl
     return mask.get_mask();
 
 }
+
 double** GetMaskFilter(double filterDirect,int widthSquare,double f,int fi)
 {           
     double** rtMask = new double*[2*widthSquare+1];
@@ -185,8 +197,6 @@ double** GetMaskFilter(double filterDirect,int widthSquare,double f,int fi)
 
     return rtMask;
 }
-
-
 
 void ToFiltring(Mat& img, int widthSquare,int f,int fi)
 {
@@ -231,36 +241,6 @@ void ToFiltring(Mat& img, int widthSquare,int f,int fi)
     }
 }
 
-
-void normalization(Mat& img, int MEAN, int VARIANCE)
-{   
-    for (int i = 0; i<IMAGE_WIDTH; i++)
-    {
-        for (int j = 0; j<IMAGE_HEIGHT; j++)
-        {
-            double tempData = static_cast<double>(ImageData[i][j]);
-            if (tempData>image_mean)
-            {
-                ImageData[i][j] = static_cast<int>(MEAN + sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
-            }
-            else
-            {
-                ImageData[i][j]  = static_cast<int>(MEAN - sqrt((tempData - image_mean)*(tempData - image_mean)*VARIANCE / image_variance));
-            }
-            img.at<uchar>((Point(i, j))) = (uchar) ImageData[i][j];
-
-        }
-    }
-}
-
-void change_loc(std::vector<Minutiae>& minutiae, int _locX, int _locY)
-{
-    for(std::vector<Minutiae>::size_type i = 0; i<minutiae.size(); i++){
-        minutiae[i].setLocX(minutiae[i].getLocX() - _locX);
-        minutiae[i].setLocY(minutiae[i].getLocY() - _locY);
-    }
-}
-
 int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
 {
     Mat img = cv::imread(imagePath, IMREAD_GRAYSCALE);
@@ -283,27 +263,24 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //cv::cvtColor(img, img, CV_RGB2GRAY);
     //imshow("After", img); waitKey(0);
     localThreshold::binarisation(img, IMAGE_WIDTH/10, IMAGE_HEIGHT/10);
+
     //binarisation(img);
     //imshow("After binarisation", img); waitKey(0);
-	cv::threshold(img, img, 50, 255, cv::THRESH_BINARY);
+    cv::threshold(img, img, 50, 255, cv::THRESH_BINARY);
     Mat binImg = img.clone();
     ideka::binOptimisation(img);
     //imshow("After binOptimisation", img); waitKey(0);
-
     //skeletionizing
     cv::bitwise_not(img, img);    //Inverse for bit-operations
     GuoHall::thinning(img);
     cv::bitwise_not(img, img);
     //imshow("After thinning", img); waitKey(0);
-
-	crossingNumber::getMinutiae(img, minutiae, 15, directMatrix);
+    crossingNumber::getMinutiae(img, minutiae, 15, directMatrix);
     cout << "Anzahl gefundener Minutien: " << minutiae.size() << endl;
     int locX = 0, locY = 0;
     //Minutiae-filtering
-	Filter::filterMinutiae(minutiae);
+    Filter::filterMinutiae(minutiae);
     std::cout << "After filter: " << minutiae.size() << std::endl;
-
-
 
     // Mat minutImg2 = img.clone();
     // cvtColor(img, minutImg2, CV_GRAY2RGB);
@@ -339,9 +316,6 @@ void show_vector(vector<Minutiae> v) {
     std::cout << "==============End Vector=========================" << std::endl;
 }
 
-
-int g_button = 1; 
-
 void scanButton ()
 {
     if (digitalRead (29) == HIGH) // Low is pushed
@@ -367,44 +341,8 @@ int matching()
     // if(api != NULL) {
     //     delete api;
     // }
-  // ---Init data---///
     write_to_lcd("Searching", "Put Finger On");
-    int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
-    int angleSet[anglesCount];
-    int i = 0;
-    int angle = angleStart;
-    while (i < anglesCount)
-    {
-        angleSet[i] = angle;
-        i++;
-        angle += angleUnit;
-    }
-    //DELTAXSET
-    int deltaXCount = (int)((deltaXFinish - deltaXStart) / deltaXUnit) + 1;
-    int deltaXSet[deltaXCount];
-    i = 0;
-    int deltaX = deltaXStart;
-    while (i < deltaXCount)
-    {
-        deltaXSet[i] = deltaX;
-        i++;
-        deltaX += deltaXUnit;
-    }
-    //DELTAYSET
-    int deltaYCount = round((deltaYFinish - deltaYStart) / deltaYUnit) + 1;
-    int deltaYSet[deltaYCount];
-    i = 0;
-    int deltaY = deltaYStart;
-    while (i < deltaYCount)
-    {
-        deltaYSet[i] = deltaY;
-        i++;
-        deltaY += deltaYUnit;
-    }
 
-
-    //-- End Init Data -- //      
-    
     if(!api->is_opened()) {
         api->show_message(-1);
         return -1;
@@ -435,6 +373,7 @@ int matching()
     write_to_lcd("Searching", "Analysing");
     vector<Minutiae> minutiaeOne;
     vector<Minutiae> minutiaeTwo;
+
     int result = getMinutiae(minutiaeOne, "./fingerprintimage.bmp");
     remove( "./fingerprintimage.bmp" );
     if(result == -1) {
@@ -446,7 +385,7 @@ int matching()
     string finger_id_exist = "";
     float percent = 1;
     SQL sql;
-    sql.create_table();   
+    sql.create_table();  
     map<std::string, vector<Minutiae> > map_data = sql.get_all_database();
     if(map_data.size() == 0 || minutiaeOne.size() == 0) {
         //cout << "Not found" << endl;
@@ -454,6 +393,9 @@ int matching()
         return 0;
     } else {
         std::map<std::string, vector<Minutiae> >::iterator iterator;
+        float count = 0;
+        float max_count = 0;
+        float current_percent = 0;
         for(iterator = map_data.begin(); iterator != map_data.end(); iterator++) {
             vector<Minutiae> v = static_cast<vector<Minutiae> > (iterator->second);
             //show_vector(v);
@@ -462,10 +404,10 @@ int matching()
                 deltaYSet, anglesCount, deltaXCount,
                 deltaYCount, angleLimit * PI / 180,
                 128, 144);
-            float count = (float)Functions::CountMinuMatching(minutiaeOne , v,
+            count = (float)Functions::CountMinuMatching(minutiaeOne , v,
                 minuResult, distanceLimit, angleLimit * PI / 180);
-            float max_count = (float) v.size();
-            float current_percent = (max_count - count) / max_count;
+            max_count = (float) v.size();
+            current_percent = (max_count - count) / max_count;
             cout << "Percent: " << current_percent << " + id: " << static_cast<std::string>(iterator->first) << " Count: " << count << " : " << v.size() << endl;
             if(current_percent < 0.35 && current_percent < percent) {
                 finger_id_exist = static_cast<std::string>(iterator->first);
@@ -473,6 +415,7 @@ int matching()
                 percent = current_percent;
                 max_count = count;
             }
+            
         }
     }
 
@@ -489,12 +432,13 @@ int matching()
         cout << "Welcome : " << username << " : " <<  finger_id_exist << " : " << max_count << endl;
         //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE, "if (percent < 0.35)");
         
-        sleep(4);
+        sleep(3);
         return 1;
     }
     else
     {
         write_to_lcd("Sorry", "Not Match");
+        sleep(3);
         cout << "User Not found!"  << endl;
     }
     //logs::write_logs("matching","fingerprint_process", //logs::OUT_STATE);
@@ -503,50 +447,13 @@ int matching()
 
 
 int fis_register()
-{
-    // ---Init data---///
-    int anglesCount = (int)((angleFinish - angleStart) / angleUnit) + 1;
-    int angleSet[anglesCount];
-    int i = 0;
-    int angle = angleStart;
-    while (i < anglesCount)
-    {
-        angleSet[i] = angle;
-        i++;
-        angle += angleUnit;
-    }
-    //DELTAXSET
-    int deltaXCount = (int)((deltaXFinish - deltaXStart) / deltaXUnit) + 1;
-    int deltaXSet[deltaXCount];
-    i = 0;
-    int deltaX = deltaXStart;
-    while (i < deltaXCount)
-    {
-        deltaXSet[i] = deltaX;
-        i++;
-        deltaX += deltaXUnit;
-    }
-    //DELTAYSET
-    int deltaYCount = round((deltaYFinish - deltaYStart) / deltaYUnit) + 1;
-    int deltaYSet[deltaYCount];
-    i = 0;
-    int deltaY = deltaYStart;
-    while (i < deltaYCount)
-    {
-        deltaYSet[i] = deltaY;
-        i++;
-        deltaY += deltaYUnit;
-    }
-
-
-    //-- End Init Data -- //    
-
+{   
     if(!api->is_opened()) {
         api->show_message(-1);
         return -1;
     }
-   int ret = api->get_img();
-   write_to_lcd("Reg Attempt 1", "Put Finger On");
+    int ret = api->get_img();
+    write_to_lcd("Reg Attempt 1", "Put Finger On");
     while(ret == 2)
     {
         ret = api->get_img();
@@ -605,6 +512,8 @@ int fis_register()
     //std::string imgPathThree( "./fingerprintimagethree.bmp");
     getMinutiae(minutiaeOne, imgPath);
     getMinutiae(minutiaeTwo, imgPathTwo);
+    remove( "./fingerprintimage.bmp" );
+    remove( "./fingerprintimagetwo.bmp" );
     //getMinutiae(minutiaeThree, imgPathThree);
     Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
         minutiaeTwo, angleSet, deltaXSet,
@@ -653,8 +562,6 @@ int fis_register()
         show_vector(minutiaeOne);
         cout << "Insert sucess user id: " << userid << endl;
         cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo  << endl;
-        remove( "./fingerprintimage.bmp" );
-        remove( "./fingerprintimagetwo.bmp" );
         write_to_lcd("Reg Hello", username);
         //remove( "./fingerprintimagethree.bmp" );
         sleep(4);
@@ -691,9 +598,9 @@ void task2()
 
 int main(int argc, const char** argv)
 {
-    clock_t tStart = clock();
+
 	api = new SynoApi();
-    initWiringPi();
+    init();
     //Note :  this for cmd purpose
     // if(argc < 2) {
     //     write_to_lcd("Error!", "Provide parameter");
@@ -712,8 +619,7 @@ int main(int argc, const char** argv)
     // }else if(argument.compare("register") == 0) {
     //     result = fis_register();
     // }
-    
-    printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+
     return 0;
 
 }

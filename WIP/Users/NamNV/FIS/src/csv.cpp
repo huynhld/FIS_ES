@@ -34,7 +34,6 @@ void csv::write_csv(string userid, string deviceid, string username)
 	csv_line.append(deviceid);
 	csv_line.append(DETER);
 	csv_line.append(dt);
-	csv_line.append(CRLT);
 	myfile << csv_line;
 	myfile.close();
 }

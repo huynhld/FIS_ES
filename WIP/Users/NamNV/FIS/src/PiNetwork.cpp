@@ -231,12 +231,11 @@ bool PiNetwork::send(string message, string &response, int &size)
 		cout << "Fail to connect" << endl;
 		return false;
 	}
-
+	fd_set readfs;
 	struct timeval Timeout;
 		/* set timeout value within input loop */
 	Timeout.tv_usec = 0;  /* milliseconds */
 	Timeout.tv_sec  = 5;  /* seconds */
-	fd_set readfs;
 	FD_SET(sockfd, &readfs);  /* set testing for source 1 */
 	int success = select(sockfd, &readfs, NULL, NULL, &Timeout);
 	if(success <= 0) return false;
@@ -267,12 +266,12 @@ bool PiNetwork::send(string message, string &response, int &size)
 	output.resize(bytes,'*');
 	FD_SET(sockfd, &readfs);  /* set testing for source 1 */
 	select(sockfd + 1, &readfs, NULL, NULL, &Timeout);
-
 	received = read(sockfd, &output[0], bytes-1);
 	if (received < 0){
 		cout << "Fail to read" << endl;
 		return false;
 	}
+	close(sockfd);
 	//cout << output << endl;
 	response  =  output.substr(output.find_last_of("\r\n\r\n")+1);
 	size = response.find("*");

@@ -356,8 +356,8 @@ int matching()
             return 0;
         }else {
             ret = api->get_img();
+            delay(100);
         }
-        delay(100);
     }
 
     if(ret != PS_OK) {
@@ -512,8 +512,7 @@ int fis_register()
     //std::string imgPathThree( "./fingerprintimagethree.bmp");
     getMinutiae(minutiaeOne, imgPath);
     getMinutiae(minutiaeTwo, imgPathTwo);
-    remove( "./fingerprintimage.bmp" );
-    remove( "./fingerprintimagetwo.bmp" );
+
     //getMinutiae(minutiaeThree, imgPathThree);
     Minutiae minuResult = Functions::GetMinutiaeChanging_UseHoughTransform(minutiaeOne ,
         minutiaeTwo, angleSet, deltaXSet,
@@ -564,6 +563,8 @@ int fis_register()
         cout << "Two fingerprint match! " << current_percent_one << "-" << countTwo  << endl;
         write_to_lcd("Reg Hello", username);
         //remove( "./fingerprintimagethree.bmp" );
+        remove( "./fingerprintimage.bmp" );
+        remove( "./fingerprintimagetwo.bmp" );
         sleep(4);
         return 1;
     }else {

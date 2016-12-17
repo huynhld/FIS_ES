@@ -211,7 +211,9 @@ bool PiNetwork::send(string message, string &response, int &size)
 	int sockfd, bytes, sent, received, total, message_size;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
+	fd_set readfs;
+	struct timeval Timeout;
+	
 	if (sockfd < 0) {
 		cout << "Fail to init" << endl;
 		return false;
@@ -231,14 +233,19 @@ bool PiNetwork::send(string message, string &response, int &size)
 		cout << "Fail to connect" << endl;
 		return false;
 	}
-	fd_set readfs;
-	struct timeval Timeout;
-		/* set timeout value within input loop */
-	Timeout.tv_usec = 0;  /* milliseconds */
-	Timeout.tv_sec  = 5;  /* seconds */
-	FD_SET(sockfd, &readfs);  /* set testing for source 1 */
-	int success = select(sockfd, &readfs, NULL, NULL, &Timeout);
-	if(success <= 0) return false;
+
+	// FD_ZERO(&readfs);
+ //    FD_CLR(sockfd, &readfs);
+ //    FD_SET(sockfd, &readfs);
+	// /* set timeout value within input loop */
+	// Timeout.tv_usec = 0;  /* milliseconds */
+	// Timeout.tv_sec  = 5;  /* seconds */
+	// int success = select(sockfd + 1, &readfs, NULL, NULL, &Timeout);
+	// if(success <= 0) 
+	// {
+	// 	std::cout << "TimeOut" << std::endl;
+	// 	return false;
+	// }
 	write(sockfd,message.c_str(),message.length());
 
 	// char response[4069];
@@ -259,13 +266,20 @@ bool PiNetwork::send(string message, string &response, int &size)
 	// if (received == total)
 	//     false;
 	
-	Timeout.tv_usec = 0;  /* milliseconds */
-	Timeout.tv_sec  = 1;  /* seconds */
+	
 	std::string output;
 	bytes = 400;
 	output.resize(bytes,'*');
-	FD_SET(sockfd, &readfs);  /* set testing for source 1 */
-	select(sockfd + 1, &readfs, NULL, NULL, &Timeout);
+	FD_ZERO(&readfs);
+    FD_CLR(sockfd, &readfs);
+    FD_SET(sockfd, &readfs);
+    Timeout.tv_usec = 0;  /* milliseconds */
+	Timeout.tv_sec  = 1;  /* seconds */
+	int success = select(sockfd + 1, &readfs, NULL, NULL, &Timeout);
+	if(success <= 0) {
+		std::cout << "TimeOut two" << std::endl;
+		//return false;
+	}
 	received = read(sockfd, &output[0], bytes-1);
 	if (received < 0){
 		cout << "Fail to read" << endl;

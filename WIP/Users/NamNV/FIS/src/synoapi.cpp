@@ -42,7 +42,6 @@ SynoApi::SynoApi() {
 
     tcsetattr(tty_fd,TCSANOW,&tio);
 
-    
 }
 
 SynoApi::~SynoApi() {
@@ -51,6 +50,37 @@ SynoApi::~SynoApi() {
 
 bool SynoApi::is_opened() {
 	return tty_fd != -1;
+}
+
+void SynoApi::reset()
+{
+	if(close(tty_fd) == 0)
+	{
+		memset(&tio,0,sizeof(tio));
+	    tio.c_iflag=0;
+	    tio.c_oflag=0;
+	    tio.c_cflag=CS8|CREAD|CLOCAL;           // 8n1, see termios.h for more information
+	    tio.c_lflag=0;
+	    tio.c_cc[VMIN]=1;
+	    tio.c_cc[VTIME]=5;
+
+	    tty_fd = open("/dev/ttyUSB0", O_RDWR | O_NONBLOCK);
+		if (tty_fd == -1)
+		{
+		/*
+		* Could not open the port.
+		*/
+			std::cout << "open_port: Unable to open /dev/ttyUSB0 - " << tty_fd << std::endl;
+		}
+		else {
+			std::cout << "open_port: Success to open /dev/ttyUSB0 - " << tty_fd << std::endl;
+			//fcntl(tty_fd, F_SETFL, O_NONBLOCK);
+			 tcflush(tty_fd, TCIFLUSH);
+		}
+	    cfsetospeed(&tio, BAUD_RATE);            // 57600 baud
+	    cfsetispeed(&tio, BAUD_RATE);            // 57600 baud
+	    tcsetattr(tty_fd,TCSANOW,&tio);
+	}
 }
 
 void SynoApi::show_message(int ret) {
@@ -135,11 +165,12 @@ int SynoApi::GetPackage(unsigned char *pData) {
 	
 	while(true) {
 		/* set timeout value within input loop */
-	    Timeout.tv_usec = 0;  /* milliseconds */
-	    Timeout.tv_sec  = 2;  /* seconds */
-		fd_set readfs;
-		FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
-		select(tty_fd, &readfs, NULL, NULL, &Timeout);
+	    Timeout.tv_usec = 400000;  /* milliseconds */
+	    Timeout.tv_sec  = 0;  /* seconds */
+		FD_ZERO(&readfs);
+        FD_CLR(tty_fd, &readfs);
+        FD_SET(tty_fd, &readfs);
+		select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
 		
 		iSuccess = read(tty_fd, &cChar, 1);
 		if(iSuccess) {
@@ -165,10 +196,11 @@ int SynoApi::GetPackage(unsigned char *pData) {
 	while(true) {
 		ret = 0;
 		/* set timeout value within input loop */
-	    Timeout.tv_usec = 0;  /* milliseconds */
-	    Timeout.tv_sec  = 2;  /* seconds */
-		fd_set readfs;
-		FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
+	    Timeout.tv_usec = 400000;  /* milliseconds */
+	    Timeout.tv_sec  = 0;  /* seconds */
+		FD_ZERO(&readfs);
+        FD_CLR(tty_fd, &readfs);
+        FD_SET(tty_fd, &readfs);
 		ret = select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
 		if(ret == 0) {
 			return -1;
@@ -200,10 +232,11 @@ int SynoApi::read_return_package(int size) {
 	memset(result,1000,sizeof(result));
 	while(true) {
 		/* set timeout value within input loop */
-	    Timeout.tv_usec = 0;  /* milliseconds */
-	    Timeout.tv_sec  = 2;  /* seconds */
-		fd_set readfs;
-		FD_SET(tty_fd, &readfs);  /* set testing for source 1 */
+	    Timeout.tv_usec = 400000;  /* milliseconds */
+	    Timeout.tv_sec  = 0;  /* seconds */
+		FD_ZERO(&readfs);
+        FD_CLR(tty_fd, &readfs);
+        FD_SET(tty_fd, &readfs);
 		ret = select(tty_fd + 1, &readfs, NULL, NULL, &Timeout);
 		if (ret == 0 || i >= size) {
 			break;

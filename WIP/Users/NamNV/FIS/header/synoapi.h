@@ -41,6 +41,7 @@ class SynoApi {
 	private:
 		int tty_fd;
 		struct termios tio;
+		fd_set readfs;
 		int write_package(unsigned char* package, int size);
 		int read_image_buffer(int &size);
 		int read_return_package(int size);
@@ -52,6 +53,7 @@ class SynoApi {
 		int GetPackageContentLength(unsigned char* pData);
 		int  GetPackageLength(unsigned char* pData);
 		int  VerifyResponsePackage(unsigned char nPackageType, unsigned char* pData);
+		
 	public:
 		SynoApi();
 		~SynoApi();
@@ -59,7 +61,7 @@ class SynoApi {
 		int upload_img(std::string image_path);
 		void show_message(int ret);
 		bool is_opened();
-
+		void reset();
 };
 
 

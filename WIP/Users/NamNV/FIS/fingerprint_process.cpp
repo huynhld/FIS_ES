@@ -345,7 +345,7 @@ int matching()
 
     if(!api->is_opened()) {
         api->show_message(-1);
-        return -1;
+        return -2;
     }
 
     int ret = api->get_img();
@@ -362,13 +362,13 @@ int matching()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
     write_to_lcd("Searching", "Finger Transfer");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
     write_to_lcd("Searching", "Analysing");
     vector<Minutiae> minutiaeOne;
@@ -450,7 +450,7 @@ int fis_register()
 {   
     if(!api->is_opened()) {
         api->show_message(-1);
-        return -1;
+        return -2;
     }
     int ret = api->get_img();
     write_to_lcd("Reg Attempt 1", "Put Finger On");
@@ -462,13 +462,13 @@ int fis_register()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
     write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimage.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
 
 
@@ -482,13 +482,13 @@ int fis_register()
 
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
     write_to_lcd("Registing", "Transfer Finger");
     ret = api->upload_img("fingerprintimagetwo.bmp");
     if(ret != PS_OK) {
         api->show_message(ret);
-        return -1;
+        return -2;
     }
 
     // ret = api->get_img();
@@ -582,16 +582,25 @@ int fis_register()
 void task2()
 {
     cout << "task2" << endl;
+    int result = 0;
     while(1)
     {
         if(g_button == 1) {
             sleep(2);
-            matching();
+            result = matching();
+            if(result == -2) {
+                std::cout << "REST" << std::endl;
+                api->reset();
+            }
         }
         else {
             sleep(2);
             cout << " g_button = 0" << endl;
-            fis_register();
+            result = fis_register();
+            if(result == -2) {
+                std::cout << "REST" << std::endl;
+                api->reset();
+            }
             g_button = 1;
         }
     }

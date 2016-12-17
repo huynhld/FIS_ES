@@ -162,8 +162,61 @@ void LoadImageData(Mat im)
     meanStdDev(im, mean, dev); 
     image_mean = mean.val[0];
     image_variance = dev.val[0]*dev.val[0];
-    GetDirectionMatrix(4);
 }
+
+
+
+int HistoNormalize(Mat &im)
+{
+    unsigned long Histogram[256];
+
+    memset(Histogram, 0, 256 * sizeof(long));
+    // estimate histogram
+    int x = 0;
+    int y = 0;
+    for (x = 0; x < IMAGE_WIDTH; x++)
+    {
+        for (y = 0; y < IMAGE_HEIGHT; y++)
+        {
+            Histogram[ImageData[x][y]]++;
+        }
+    }
+
+    // calc the mean value
+    double  dMean = 0;
+    for (long i = 1; i < 255; i++)
+        dMean += i*Histogram[i];
+    dMean = long(dMean / (IMAGE_WIDTH*IMAGE_HEIGHT));
+
+    double dSigma = 0;
+    for (long i = 0; i < 255; i++)
+        dSigma += Histogram[i] * (i - dMean)*(i - dMean);
+    dSigma /= (IMAGE_WIDTH*IMAGE_HEIGHT);
+    dSigma = sqrt(dSigma);
+
+    double dMean0 = 128, dSigma0 = 128;
+    double dCoeff = dSigma0 / dSigma;
+
+    for (x = 0; x < IMAGE_WIDTH; x++)
+    {
+        for (y = 0; y < IMAGE_HEIGHT; y++)
+        {
+            double dVal = ImageData[x][y];
+            dVal = dMean0 + dCoeff*(dVal - dMean0);
+            if (dVal < 0)
+                dVal = 0;
+            else if (dVal > 255)
+                dVal = 255;
+
+            ImageData[x][y] = (unsigned char)dVal;
+            im.at<uchar>((Point(x, y))) = (uchar)ImageData[x][y];
+        }
+    }
+
+    return 0;
+}
+
+
 
 double** GetMaskFilter(double filterDirect, std::vector<MaskGabor> MaskGaborCollection)
 {
@@ -256,6 +309,8 @@ int getMinutiae(std::vector<Minutiae>& minutiae, std::string imagePath)
     //imshow("Before", img); waitKey(0);
     //Mat img = sourceImage.clone();
     LoadImageData(img);
+    HistoNormalize(img);
+    GetDirectionMatrix(4);
     //normalization(img, 100, 100);
     //imshow("After", img); waitKey(0);
     ToFiltring(img, 4, f, fi);
